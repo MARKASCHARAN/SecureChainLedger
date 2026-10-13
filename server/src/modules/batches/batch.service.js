@@ -120,10 +120,17 @@ export async function approveBatch(batchId, requestingUser) {
     throw new ConflictError(`Batch must be in PENDING_QA status to approve. Current: ${batch.status}`);
   }
 
-  const updated = await prisma.batch.update({
-    where: { id: batchId },
-    data: { status: 'APPROVED', qaApprovedAt: new Date(), qaApprovedBy: requestingUser.id },
-  });
+  const [updated] = await prisma.$transaction([
+    prisma.batch.update({
+      where: { id: batchId },
+      data: { status: 'APPROVED', qaApprovedAt: new Date(), qaApprovedBy: requestingUser.id },
+    }),
+    prisma.inventory.upsert({
+      where: { organizationId_batchId: { organizationId: batch.manufacturerId, batchId } },
+      update: { quantity: batch.quantity },
+      create: { organizationId: batch.manufacturerId, batchId, quantity: batch.quantity },
+    }),
+  ]);
 
   await ledgerService.enqueueEvent('BATCH_APPROVED', batchId, {
     batchId,

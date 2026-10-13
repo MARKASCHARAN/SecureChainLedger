@@ -14,7 +14,16 @@ export function validate(schema, target = 'body') {
     if (!result.success) {
       return next(new ValidationError('Validation failed', result.error.flatten().fieldErrors));
     }
-    req[target] = result.data;
+    if (target === 'query') {
+      Object.defineProperty(req, 'query', {
+        value: result.data,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+    } else {
+      req[target] = result.data;
+    }
     next();
   };
 }
