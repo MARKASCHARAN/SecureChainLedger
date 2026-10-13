@@ -14,6 +14,9 @@ import {
   meHandler,
 } from './auth.controller.js';
 
+import { prisma } from '../../lib/prisma.js';
+import { sendSuccess } from '../../lib/response.js';
+
 const router = Router();
 
 const authLimiter = rateLimit({
@@ -22,6 +25,19 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, code: 'RATE_LIMITED', message: 'Too many requests, please try again later.' },
+});
+
+router.get('/organizations', async (req, res, next) => {
+  try {
+    const orgs = await prisma.organization.findMany({
+      where: { status: 'ACTIVE' },
+      select: { id: true, name: true, type: true },
+      orderBy: { name: 'asc' },
+    });
+    return sendSuccess(res, { organizations: orgs });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.post('/register', authLimiter, validate(registerSchema), registerHandler);

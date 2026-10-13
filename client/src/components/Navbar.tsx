@@ -11,7 +11,7 @@ interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onLogout: () => void;
-  onOpenAuth: () => void;
+  onOpenAuth: (mode?: 'login' | 'register') => void;
   onOpenSearch?: () => void;
 }
 
@@ -365,23 +365,42 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             </div>
           ) : (
-            <button
-              onClick={onOpenAuth}
-              style={{
-                background: '#000000',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '0.55rem 1.25rem',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                letterSpacing: '-0.01em',
-                transition: 'opacity 0.2s ease'
-              }}
-            >
-              Portal Login
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <button
+                onClick={() => onOpenAuth('login')}
+                style={{
+                  background: 'transparent',
+                  color: '#111827',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '6px',
+                  padding: '0.5rem 0.95rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  letterSpacing: '-0.01em',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => onOpenAuth('register')}
+                style={{
+                  background: '#000000',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '0.55rem 1.15rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  letterSpacing: '-0.01em',
+                  transition: 'opacity 0.2s ease'
+                }}
+              >
+                Register Node
+              </button>
+            </div>
           )}
 
           {/* Mobile Menu Toggle */}

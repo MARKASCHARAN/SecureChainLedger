@@ -14,7 +14,12 @@ const COOKIE_OPTS = {
 export async function registerHandler(req, res, next) {
   try {
     const user = await register(req.body);
-    return sendSuccess(res, { user }, 201, 'Account created successfully.');
+    const { accessToken, refreshToken } = await login(req.body, {
+      userAgent: req.headers['user-agent'],
+      ipAddress: req.ip,
+    });
+    res.cookie('refresh_token', refreshToken, COOKIE_OPTS);
+    return sendSuccess(res, { user, accessToken }, 201, 'Account created successfully.');
   } catch (err) {
     next(err);
   }

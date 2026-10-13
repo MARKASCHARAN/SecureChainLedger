@@ -7,7 +7,7 @@ import {
 interface HeroHomePageProps {
   onNavigateToVerify: (batchNumber?: string) => void;
   onNavigateToLedger: () => void;
-  onOpenAuth: () => void;
+  onOpenAuth: (mode?: 'login' | 'register') => void;
 }
 
 export const HeroHomePage: React.FC<HeroHomePageProps> = ({
@@ -53,7 +53,7 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
       description: 'When safety excursions or counterfeit attempts are verified, regulators and authorized manufacturers can trigger targeted recall locks. Every connected distributor, hospital, and retail pharmacy node receives instant quarantine enforcement, locking dispensing rights in under 60 seconds.',
       image: '/product-family/tab-access.png',
       ctaText: 'Enterprise Safety Portal',
-      action: onOpenAuth,
+      action: () => onOpenAuth('login'),
     },
   };
 
@@ -650,7 +650,7 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
 
             {/* Bracket Button */}
             <button
-              onClick={productFamilyData[activeProductTab].action}
+              onClick={() => productFamilyData[activeProductTab].action()}
               className="vantor-bracket-btn"
             >
               <span className="bracket-corner tl" />
@@ -688,7 +688,7 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
               Verify Sample Batch BATCH-2026-001
             </button>
             <button
-              onClick={onOpenAuth}
+              onClick={() => onOpenAuth('login')}
               className="btn btn-secondary"
               style={{ padding: '0.85rem 2rem', fontSize: '1rem' }}
             >
@@ -725,7 +725,7 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
           </div>
 
           {/* Contact Us Bracket Button */}
-          <button onClick={onOpenAuth} className="vantor-bracket-btn-dark">
+          <button onClick={() => onOpenAuth('login')} className="vantor-bracket-btn-dark">
             <span className="bracket-corner tl" />
             <span className="bracket-corner tr" />
             <span className="bracket-corner bl" />
@@ -835,8 +835,8 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
               Connect
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <a href="#contact" className="footer-link-primary" onClick={(e) => { e.preventDefault(); onOpenAuth(); }}>Contact Us</a>
-              <a href="#request-node" className="footer-link-primary" onClick={(e) => { e.preventDefault(); onOpenAuth(); }}>Request Node Access</a>
+              <a href="#contact" className="footer-link-primary" onClick={(e) => { e.preventDefault(); onOpenAuth('login'); }}>Contact Us</a>
+              <a href="#request-node" className="footer-link-primary" onClick={(e) => { e.preventDefault(); onOpenAuth('register'); }}>Request Node Access</a>
               <a href="#partner-directory" className="footer-link-primary">Partner Directory</a>
             </div>
           </div>
@@ -858,7 +858,7 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
               Login & Explore
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <a href="#hub" className="footer-link-primary" onClick={(e) => { e.preventDefault(); onOpenAuth(); }}>Enterprise Portal Login</a>
+              <a href="#hub" className="footer-link-primary" onClick={(e) => { e.preventDefault(); onOpenAuth('login'); }}>Enterprise Portal Login</a>
               <a href="#discover" className="footer-link-primary" onClick={(e) => { e.preventDefault(); onNavigateToLedger(); }}>Browse Public Ledger</a>
             </div>
           </div>

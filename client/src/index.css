@@ -564,3 +564,88 @@ tr:hover td {
   }
 }
 
+/* Auth Terminal Responsive Container */
+.auth-terminal-grid {
+  display: grid;
+  grid-template-columns: 44% 56%;
+  min-height: 640px;
+}
+
+@media (max-width: 860px) {
+  .auth-terminal-grid {
+    grid-template-columns: 1fr;
+  }
+  .auth-left-panel {
+    display: none !important;
+  }
+}
+
+.auth-tab-btn {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.6rem 0.2rem;
+  color: rgba(255, 255, 255, 0.45);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.auth-tab-btn.active {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.auth-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: #38bdf8;
+  border-radius: 1px;
+}
+
+.auth-tab-btn:hover:not(.active) {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.auth-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.925rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.auth-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.demo-persona-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justifyContent: space-between;
+  text-align: left;
+}
+
+.demo-persona-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-1px);
+}
+

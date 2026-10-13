@@ -49,10 +49,12 @@ export const api = {
       body: JSON.stringify(credentials),
     }),
   register: (userData: any) =>
-    request<{ user: any }>('/auth/register', {
+    request<{ user: any; accessToken?: string }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     }),
+  getOrganizations: () =>
+    request<{ organizations: Array<{ id: string; name: string; type: string }> }>('/auth/organizations'),
   me: () => request<{ user: any }>('/auth/me'),
 
   // Public Verification

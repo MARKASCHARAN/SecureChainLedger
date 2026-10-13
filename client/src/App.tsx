@@ -18,6 +18,12 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('home');
   const [verifyBatchNumber, setVerifyBatchNumber] = useState<string>('');
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+
+  const handleOpenAuth = (mode: 'login' | 'register' = 'login') => {
+    setAuthModalMode(mode);
+    setAuthModalOpen(true);
+  };
 
   useEffect(() => {
     const verifySession = async () => {
@@ -60,7 +66,7 @@ export const App: React.FC = () => {
           setActiveTab(tab);
         }}
         onLogout={handleLogout}
-        onOpenAuth={() => setAuthModalOpen(true)}
+        onOpenAuth={handleOpenAuth}
         onOpenSearch={() => {
           setVerifyBatchNumber('');
           setActiveTab('verify');
@@ -75,7 +81,7 @@ export const App: React.FC = () => {
               setActiveTab('verify');
             }}
             onNavigateToLedger={() => setActiveTab('ledger')}
-            onOpenAuth={() => setAuthModalOpen(true)}
+            onOpenAuth={handleOpenAuth}
           />
         )}
         {activeTab === 'verify' && <PublicVerificationPage initialBatchNumber={verifyBatchNumber} />}
@@ -162,6 +168,7 @@ export const App: React.FC = () => {
 
       <AuthModal
         isOpen={authModalOpen}
+        initialMode={authModalMode}
         onClose={() => setAuthModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
       />
