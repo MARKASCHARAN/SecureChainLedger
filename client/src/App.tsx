@@ -10,16 +10,53 @@ import { BatchesPage } from './pages/BatchesPage';
 import { TransfersPage } from './pages/TransfersPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { RecallsPage } from './pages/RecallsPage';
+import { GovernmentAlignmentPage } from './pages/GovernmentAlignmentPage';
 import { api, clearToken } from './services/api';
 import type { User } from './types';
 import { Database, Cpu } from 'lucide-react';
 
 export const App: React.FC = () => {
+  const getTabFromPath = (pathname: string): string => {
+    const clean = pathname.replace(/^\/+|\/+$/g, '');
+    if (clean === 'government-alignment' || clean === 'government-initiatives') {
+      return 'government-alignment';
+    }
+    if (clean === 'verify') return 'verify';
+    if (clean === 'ledger') return 'ledger';
+    if (clean === 'batches') return 'batches';
+    if (clean === 'transfers') return 'transfers';
+    if (clean === 'inventory') return 'inventory';
+    if (clean === 'recalls') return 'recalls';
+    return 'home';
+  };
+
   const [user, setUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('home');
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return getTabFromPath(window.location.pathname);
+    }
+    return 'home';
+  });
   const [verifyBatchNumber, setVerifyBatchNumber] = useState<string>('');
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+
+  const handleTabChange = (tab: string) => {
+    if (tab !== 'verify') setVerifyBatchNumber('');
+    setActiveTab(tab);
+    const targetPath = tab === 'home' ? '/' : `/${tab}`;
+    if (typeof window !== 'undefined' && window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setActiveTab(getTabFromPath(window.location.pathname));
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const handleOpenAuth = (mode: 'login' | 'register' = 'login') => {
     setAuthModalMode(mode);
@@ -43,21 +80,21 @@ export const App: React.FC = () => {
   const handleLogout = () => {
     clearToken();
     setUser(null);
-    setActiveTab('home');
+    handleTabChange('home');
   };
 
   const handleLoginSuccess = (loggedInUser: User) => {
     setUser(loggedInUser);
     if (loggedInUser.role === 'MANUFACTURER') {
-      setActiveTab('batches');
+      handleTabChange('batches');
     } else if (loggedInUser.role === 'DISTRIBUTOR') {
-      setActiveTab('transfers');
+      handleTabChange('transfers');
     } else {
-      setActiveTab('inventory');
+      handleTabChange('inventory');
     }
   };
 
-  const isWorkspaceView = user !== null && activeTab !== 'home';
+  const isWorkspaceView = user !== null && activeTab !== 'home' && activeTab !== 'government-alignment';
 
   return (
     <div style={{ 
@@ -70,19 +107,16 @@ export const App: React.FC = () => {
       <Navbar
         user={user}
         activeTab={activeTab}
-        setActiveTab={(tab) => {
-          if (tab !== 'verify') setVerifyBatchNumber('');
-          setActiveTab(tab);
-        }}
+        setActiveTab={handleTabChange}
         onLogout={handleLogout}
         onOpenAuth={handleOpenAuth}
         onOpenSearch={() => {
           setVerifyBatchNumber('');
-          setActiveTab('verify');
+          handleTabChange('verify');
         }}
       />
 
-      {user ? (
+      {user && activeTab !== 'government-alignment' ? (
         <div style={{ display: 'flex', flex: 1, minHeight: 'calc(100vh - 65px)' }}>
           <AppSidebar
             user={user}
@@ -147,10 +181,19 @@ export const App: React.FC = () => {
             <HeroHomePage
               onNavigateToVerify={(batch) => {
                 if (batch) setVerifyBatchNumber(batch);
-                setActiveTab('verify');
+                handleTabChange('verify');
               }}
-              onNavigateToLedger={() => setActiveTab('ledger')}
+              onNavigateToLedger={() => handleTabChange('ledger')}
               onOpenAuth={handleOpenAuth}
+            />
+          )}
+          {activeTab === 'government-alignment' && (
+            <GovernmentAlignmentPage
+              onNavigateToArchitecture={() => handleTabChange('ledger')}
+              onNavigateToVerify={(batch) => {
+                if (batch) setVerifyBatchNumber(batch);
+                handleTabChange('verify');
+              }}
             />
           )}
           {activeTab === 'verify' && <PublicVerificationPage initialBatchNumber={verifyBatchNumber} />}

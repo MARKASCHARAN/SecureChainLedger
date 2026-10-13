@@ -44,6 +44,13 @@ const DEMO_PRESETS = [
     org: 'Metro General Hospital', 
     badgeColor: '#c084fc'
   },
+  { 
+    role: 'PHARMACY', 
+    label: 'Pharmacy', 
+    email: 'pharmacy.admin@demo.invalid', 
+    org: 'Apex Care Pharmacy', 
+    badgeColor: '#f59e0b'
+  },
 ];
 
 const ROLE_OPTIONS: { role: UserRole; label: string; icon: any }[] = [

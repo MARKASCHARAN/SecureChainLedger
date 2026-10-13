@@ -2,9 +2,9 @@
 :root {
   --bg-primary: #07090e;
   --bg-surface: #0d121f;
-  --bg-card: rgba(18, 24, 38, 0.75);
-  --bg-card-hover: rgba(26, 35, 55, 0.85);
-  --border-subtle: rgba(255, 255, 255, 0.08);
+  --bg-card: #090d16;
+  --bg-card-hover: #111726;
+  --border-subtle: #1e293b;
   --border-accent: rgba(16, 185, 129, 0.3);
   --border-focus: #10b981;
 

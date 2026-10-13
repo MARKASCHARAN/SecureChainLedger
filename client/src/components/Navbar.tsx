@@ -393,7 +393,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             Public Verification
           </button>
 
-          {/* Ledger Explorer */}
           <button
             onClick={() => { setActiveTab('ledger'); setProductsOpen(false); setIndustriesOpen(false); }}
             style={{
@@ -408,6 +407,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
           >
             Ledger Explorer
+          </button>
+
+          <button
+            onClick={() => { setActiveTab('government-alignment'); setProductsOpen(false); setIndustriesOpen(false); }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: activeTab === 'government-alignment' ? '#000000' : '#374151',
+              fontWeight: 600,
+              fontSize: '0.925rem',
+              cursor: 'pointer',
+              borderBottom: activeTab === 'government-alignment' ? '2px solid #000000' : '2px solid transparent',
+              padding: '0.5rem 0'
+            }}
+          >
+            Government Alignment
           </button>
         </nav>
 
@@ -498,6 +513,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div onClick={() => { setActiveTab('home'); setMobileMenuOpen(false); }} style={{ fontWeight: 600, cursor: 'pointer' }}>Home</div>
           <div onClick={() => { setActiveTab('verify'); setMobileMenuOpen(false); }} style={{ fontWeight: 600, cursor: 'pointer' }}>Public Verification</div>
           <div onClick={() => { setActiveTab('ledger'); setMobileMenuOpen(false); }} style={{ fontWeight: 600, cursor: 'pointer' }}>Ledger Explorer</div>
+          <div onClick={() => { setActiveTab('government-alignment'); setMobileMenuOpen(false); }} style={{ fontWeight: 600, cursor: 'pointer' }}>Government Alignment</div>
         </div>
       )}
     </header>

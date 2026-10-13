@@ -61,46 +61,86 @@ export const PublicVerificationPage: React.FC<PublicVerificationPageProps> = ({ 
 
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
-      {/* Hero Header */}
       <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-        <div className="badge badge-authentic" style={{ marginBottom: '1rem', padding: '0.4rem 1rem' }}>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.45rem',
+          background: 'rgba(5, 150, 105, 0.1)',
+          color: '#059669',
+          padding: '0.35rem 0.95rem',
+          borderRadius: '9999px',
+          fontSize: '0.8rem',
+          fontWeight: 700,
+          border: '1px solid rgba(5, 150, 105, 0.3)',
+          marginBottom: '1rem'
+        }}>
           <Sparkles size={14} /> Hyperledger Fabric Provenance Verified
         </div>
-        <h1 style={{ fontSize: '2.75rem', lineHeight: 1.15, marginBottom: '1rem' }}>
-          Verify Medicine <span className="text-gradient">Authenticity</span>
+        <h1 style={{
+          fontSize: 'clamp(2rem, 4vw, 2.75rem)',
+          fontWeight: 800,
+          letterSpacing: '-0.03em',
+          color: '#0f172a',
+          lineHeight: 1.15,
+          marginBottom: '1rem'
+        }}>
+          Verify Medicine <span style={{
+            background: 'linear-gradient(135deg, #0284c7 0%, #059669 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>Authenticity</span>
         </h1>
-        <p style={{ color: 'var(--text-secondary)', maxWidth: '640px', margin: '0 auto', fontSize: '1.05rem' }}>
+        <p style={{ color: '#64748b', maxWidth: '640px', margin: '0 auto', fontSize: '1.05rem', lineHeight: 1.6 }}>
           Scan the QR code on your pharmaceutical packaging or enter the batch number below to inspect the complete cryptographic custody chain.
         </p>
 
-        {/* Search Input */}
         <div style={{
-          maxWidth: '620px',
+          maxWidth: '640px',
           margin: '2rem auto 1rem',
           display: 'flex',
           gap: '0.5rem',
-          background: 'rgba(13, 18, 31, 0.9)',
-          padding: '0.4rem',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border-accent)',
-          boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.6)'
+          background: '#090d16',
+          padding: '0.5rem',
+          borderRadius: '16px',
+          border: '1px solid #1e293b',
+          boxShadow: '0 12px 32px -4px rgba(0, 0, 0, 0.3)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '0.75rem', color: 'var(--text-muted)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '0.85rem', color: '#94a3b8' }}>
             <Search size={20} />
           </div>
           <input
             type="text"
-            className="form-input"
             placeholder="e.g. BATCH-2026-001 or scan QR"
             value={batchNumber}
             onChange={(e) => setBatchNumber(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
-            style={{ border: 'none', background: 'transparent', fontSize: '1rem' }}
+            style={{
+              flex: 1,
+              border: 'none',
+              background: 'transparent',
+              fontSize: '1rem',
+              color: '#ffffff',
+              outline: 'none',
+              fontFamily: 'inherit'
+            }}
           />
           <button
             onClick={() => setScannerOpen(true)}
-            className="btn btn-secondary"
-            style={{ padding: '0.65rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap' }}
+            style={{
+              padding: '0.65rem 1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              whiteSpace: 'nowrap',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#ffffff',
+              borderRadius: '8px',
+              fontSize: '0.88rem',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
             title="Scan Packaging QR Code"
           >
             <Camera size={18} />
@@ -109,28 +149,39 @@ export const PublicVerificationPage: React.FC<PublicVerificationPageProps> = ({ 
           <button
             onClick={() => handleVerify()}
             disabled={loading || !batchNumber.trim()}
-            className="btn btn-primary"
-            style={{ padding: '0.65rem 1.5rem', whiteSpace: 'nowrap' }}
+            style={{
+              padding: '0.65rem 1.4rem',
+              whiteSpace: 'nowrap',
+              background: '#059669',
+              border: 'none',
+              color: '#ffffff',
+              borderRadius: '8px',
+              fontSize: '0.88rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              opacity: loading || !batchNumber.trim() ? 0.6 : 1
+            }}
           >
             {loading ? 'Verifying...' : 'Verify Now'}
           </button>
         </div>
 
-        {/* Demo Batch shortcuts */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.825rem', color: 'var(--text-muted)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.825rem', color: '#64748b' }}>
           <span>Try quick demo:</span>
-          {['BATCH-2026-001', 'WF-BATCH-TEST'].map((demo) => (
+          {['BATCH-2026-001', 'BATCH-2026-004', 'BATCH-2026-006'].map((demo) => (
             <button
               key={demo}
               onClick={() => { setBatchNumber(demo); handleVerify(demo); }}
               style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-secondary)',
-                padding: '0.2rem 0.6rem',
+                background: '#090d16',
+                border: '1px solid #1e293b',
+                color: '#38bdf8',
+                padding: '0.25rem 0.65rem',
                 borderRadius: '6px',
                 cursor: 'pointer',
-                fontFamily: 'var(--font-mono)'
+                fontFamily: 'monospace',
+                fontSize: '0.8rem',
+                fontWeight: 600
               }}
             >
               {demo}

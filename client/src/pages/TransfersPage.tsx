@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
+import { Truck, CheckCircle2, XCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import { api } from '../services/api';
 import type { Transfer, User } from '../types';
 
@@ -62,59 +62,147 @@ export const TransfersPage: React.FC<TransfersPageProps> = ({ user }) => {
   });
 
   return (
-    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem 1.5rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
+    <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '2.5rem 2rem 4rem' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '2.25rem' }}>
         <div>
-          <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>Custody Handover & Shipments</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            color: '#64748b',
+            marginBottom: '0.75rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em'
+          }}>
+            <span>SecureChain</span>
+            <span>/</span>
+            <span>Enterprise Workspace</span>
+            <span>/</span>
+            <span style={{ color: '#0f172a' }}>Custody Transfers</span>
+          </div>
+
+          <h1 style={{
+            fontSize: 'clamp(1.75rem, 3vw, 2.25rem)',
+            fontWeight: 800,
+            letterSpacing: '-0.03em',
+            color: '#0f172a',
+            lineHeight: 1.2,
+            marginBottom: '0.4rem'
+          }}>
+            Custody Handover & Shipments
+          </h1>
+          <p style={{ color: '#64748b', fontSize: '0.95rem', maxWidth: '720px' }}>
             Multi-party transfer protocol: verified dispatch, cold-chain receipt, and ownership transfer.
           </p>
         </div>
 
-        {/* Filter buttons */}
-        <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.03)', padding: '0.3rem', borderRadius: 'var(--radius-sm)' }}>
+        <div style={{
+          display: 'flex',
+          gap: '0.35rem',
+          background: '#090d16',
+          border: '1px solid #1e293b',
+          padding: '0.35rem',
+          borderRadius: '10px'
+        }}>
           {(['ALL', 'INITIATED', 'DELIVERED'] as const).map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className="btn"
               style={{
-                padding: '0.4rem 0.85rem',
+                padding: '0.45rem 0.95rem',
                 fontSize: '0.8rem',
-                background: activeFilter === filter ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
-                color: activeFilter === filter ? '#34d399' : 'var(--text-secondary)',
+                fontWeight: 600,
+                borderRadius: '7px',
+                cursor: 'pointer',
                 border: 'none',
+                background: activeFilter === filter ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+                color: activeFilter === filter ? '#38bdf8' : '#94a3b8',
+                transition: 'all 0.15s ease'
               }}
             >
-              {filter === 'INITIATED' ? 'In Transit' : filter}
+              {filter === 'INITIATED' ? 'In Transit' : filter === 'ALL' ? 'All Transfers' : 'Delivered'}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Transfers Table */}
-      <div className="glass-card">
+      <div style={{
+        background: '#090d16',
+        border: '1px solid #1e293b',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        boxShadow: '0 12px 30px -8px rgba(0, 0, 0, 0.35)'
+      }}>
+        <div style={{
+          padding: '1.25rem 1.5rem',
+          borderBottom: '1px solid #1e293b',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          background: '#05070d'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff' }}>
+              Custody Transfer Waybills
+            </div>
+            <span style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              color: '#94a3b8',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              padding: '0.2rem 0.55rem',
+              borderRadius: '9999px'
+            }}>
+              {filtered.length} shipments
+            </span>
+          </div>
+
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            fontSize: '0.8rem',
+            color: '#38bdf8',
+            background: 'rgba(56, 189, 248, 0.1)',
+            padding: '0.3rem 0.75rem',
+            borderRadius: '9999px',
+            border: '1px solid rgba(56, 189, 248, 0.25)'
+          }}>
+            <ShieldCheck size={14} /> Signed Chaincode Handshakes
+          </div>
+        </div>
+
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-            Loading custody transactions...
+          <div style={{ textAlign: 'center', padding: '4rem 2rem', color: '#94a3b8' }}>
+            <div style={{ fontSize: '1.05rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
+              Loading custody transactions...
+            </div>
+            <div style={{ fontSize: '0.85rem' }}>Querying peer transfer logs and active shipments.</div>
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-            <Truck size={40} style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
-            <p>No transfer events matching current criteria.</p>
+          <div style={{ textAlign: 'center', padding: '4rem 2rem', color: '#94a3b8' }}>
+            <Truck size={44} style={{ margin: '0 auto 0.75rem', opacity: 0.4, color: '#ffffff' }} />
+            <div style={{ fontSize: '1rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.25rem' }}>
+              No transfer events found
+            </div>
+            <p style={{ fontSize: '0.85rem' }}>No shipments matching current filter criteria.</p>
           </div>
         ) : (
-          <div className="table-container">
-            <table>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr>
-                  <th>Batch / Item</th>
-                  <th>Custody Route</th>
-                  <th>Quantity</th>
-                  <th>Dispatched</th>
-                  <th>Status</th>
-                  <th>Waybill Notes</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
+                  <th style={{ background: '#05070d', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '1rem 1.25rem', borderBottom: '1px solid #1e293b' }}>Batch / Item</th>
+                  <th style={{ background: '#05070d', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '1rem 1.25rem', borderBottom: '1px solid #1e293b' }}>Custody Route</th>
+                  <th style={{ background: '#05070d', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '1rem 1.25rem', borderBottom: '1px solid #1e293b' }}>Quantity</th>
+                  <th style={{ background: '#05070d', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '1rem 1.25rem', borderBottom: '1px solid #1e293b' }}>Dispatched</th>
+                  <th style={{ background: '#05070d', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '1rem 1.25rem', borderBottom: '1px solid #1e293b' }}>Status</th>
+                  <th style={{ background: '#05070d', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '1rem 1.25rem', borderBottom: '1px solid #1e293b' }}>Waybill Notes</th>
+                  <th style={{ background: '#05070d', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '1rem 1.25rem', borderBottom: '1px solid #1e293b', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -123,68 +211,114 @@ export const TransfersPage: React.FC<TransfersPageProps> = ({ user }) => {
                   const canAct = isReceiver && (xfer.status === 'INITIATED' || xfer.status === 'IN_TRANSIT');
 
                   return (
-                    <tr key={xfer.id}>
-                      <td>
-                        <div className="font-mono" style={{ fontWeight: 600, color: '#38bdf8' }}>
+                    <tr
+                      key={xfer.id}
+                      style={{
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                        transition: 'background 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <td style={{ padding: '1.15rem 1.25rem', verticalAlign: 'middle' }}>
+                        <div style={{
+                          display: 'inline-block',
+                          fontFamily: 'monospace',
+                          fontWeight: 700,
+                          color: '#38bdf8',
+                          background: 'rgba(56, 189, 248, 0.1)',
+                          padding: '0.25rem 0.55rem',
+                          borderRadius: '6px',
+                          border: '1px solid rgba(56, 189, 248, 0.25)',
+                          fontSize: '0.85rem',
+                          marginBottom: '0.25rem'
+                        }}>
                           {xfer.batch?.batchNumber || 'Batch Lot'}
                         </div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                          {xfer.batch?.product?.genericName}
+                        <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                          {xfer.batch?.product?.genericName || 'Pharmaceutical Formulation'}
                         </div>
                       </td>
-                      <td>
+                      <td style={{ padding: '1.15rem 1.25rem', verticalAlign: 'middle' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
-                          <span style={{ color: '#fff', fontWeight: 600 }}>{xfer.sender?.name}</span>
-                          <ArrowRight size={14} color="var(--accent-cyan)" />
+                          <span style={{ color: '#ffffff', fontWeight: 600 }}>{xfer.sender?.name}</span>
+                          <ArrowRight size={14} color="#38bdf8" />
                           <span style={{ color: '#34d399', fontWeight: 600 }}>{xfer.receiver?.name}</span>
                         </div>
                       </td>
-                      <td>
-                        <strong style={{ color: '#fff' }}>{xfer.quantity.toLocaleString()}</strong> units
+                      <td style={{ padding: '1.15rem 1.25rem', verticalAlign: 'middle' }}>
+                        <strong style={{ color: '#ffffff', fontSize: '1rem' }}>{xfer.quantity.toLocaleString()}</strong> <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>units</span>
                       </td>
-                      <td style={{ fontSize: '0.825rem', color: 'var(--text-secondary)' }}>
+                      <td style={{ padding: '1.15rem 1.25rem', verticalAlign: 'middle', fontSize: '0.825rem', color: '#cbd5e1' }}>
                         {new Date(xfer.createdAt).toLocaleDateString()}
                       </td>
-                      <td>
-                        <span className={`badge ${
-                          xfer.status === 'DELIVERED'
-                            ? 'badge-authentic'
-                            : xfer.status === 'REJECTED'
-                            ? 'badge-recalled'
-                            : 'badge-transit'
-                        }`}>
+                      <td style={{ padding: '1.15rem 1.25rem', verticalAlign: 'middle' }}>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.25rem 0.65rem',
+                          borderRadius: '9999px',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          background: xfer.status === 'DELIVERED' ? 'rgba(16, 185, 129, 0.15)' : xfer.status === 'REJECTED' ? 'rgba(244, 63, 94, 0.15)' : 'rgba(56, 189, 248, 0.15)',
+                          color: xfer.status === 'DELIVERED' ? '#34d399' : xfer.status === 'REJECTED' ? '#fb7185' : '#38bdf8',
+                          border: xfer.status === 'DELIVERED' ? '1px solid rgba(16, 185, 129, 0.3)' : xfer.status === 'REJECTED' ? '1px solid rgba(244, 63, 94, 0.3)' : '1px solid rgba(56, 189, 248, 0.3)'
+                        }}>
                           {xfer.status === 'DELIVERED' ? 'Delivered' : xfer.status === 'REJECTED' ? 'Rejected' : 'In Transit'}
                         </span>
                       </td>
-                      <td style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', maxWidth: '200px' }}>
+                      <td style={{ padding: '1.15rem 1.25rem', verticalAlign: 'middle', fontSize: '0.825rem', color: '#94a3b8', maxWidth: '240px' }}>
                         {xfer.notes || 'Standard logistics dispatch'}
                       </td>
-                      <td style={{ textAlign: 'right' }}>
+                      <td style={{ padding: '1.15rem 1.25rem', verticalAlign: 'middle', textAlign: 'right' }}>
                         {canAct ? (
                           <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
                             <button
                               onClick={() => handleConfirm(xfer.id)}
                               disabled={actionLoading === xfer.id}
-                              className="btn btn-primary"
-                              style={{ padding: '0.35rem 0.75rem', fontSize: '0.775rem' }}
+                              style={{
+                                padding: '0.45rem 0.85rem',
+                                fontSize: '0.8rem',
+                                fontWeight: 700,
+                                background: '#10b981',
+                                color: '#000000',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem'
+                              }}
                             >
                               <CheckCircle2 size={13} /> Confirm Receipt
                             </button>
                             <button
                               onClick={() => handleReject(xfer.id)}
                               disabled={actionLoading === xfer.id}
-                              className="btn btn-danger"
-                              style={{ padding: '0.35rem 0.65rem', fontSize: '0.775rem' }}
+                              style={{
+                                padding: '0.45rem 0.85rem',
+                                fontSize: '0.8rem',
+                                fontWeight: 700,
+                                background: 'rgba(244, 63, 94, 0.15)',
+                                color: '#fb7185',
+                                border: '1px solid rgba(244, 63, 94, 0.35)',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem'
+                              }}
                             >
                               <XCircle size={13} /> Reject
                             </button>
                           </div>
                         ) : xfer.status === 'DELIVERED' ? (
-                          <div style={{ fontSize: '0.78rem', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.3rem' }}>
+                          <div style={{ fontSize: '0.78rem', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.3rem', fontWeight: 600 }}>
                             <CheckCircle2 size={13} /> Custody Settled
                           </div>
                         ) : (
-                          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                          <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
                             Awaiting Recipient
                           </div>
                         )}
