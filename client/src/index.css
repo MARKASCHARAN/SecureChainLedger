@@ -344,6 +344,71 @@ tr:hover td {
   gap: 1.25rem;
 }
 
+/* Vantor-style Bracket Button */
+.vantor-bracket-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justifyContent: center;
+  padding: 0.85rem 2.25rem;
+  background: transparent;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.vantor-bracket-btn .bracket-corner {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.vantor-bracket-btn .bracket-corner.tl {
+  top: 0;
+  left: 0;
+  border-top: 1.5px solid;
+  border-left: 1.5px solid;
+}
+
+.vantor-bracket-btn .bracket-corner.tr {
+  top: 0;
+  right: 0;
+  border-top: 1.5px solid;
+  border-right: 1.5px solid;
+}
+
+.vantor-bracket-btn .bracket-corner.bl {
+  bottom: 0;
+  left: 0;
+  border-bottom: 1.5px solid;
+  border-left: 1.5px solid;
+}
+
+.vantor-bracket-btn .bracket-corner.br {
+  bottom: 0;
+  right: 0;
+  border-bottom: 1.5px solid;
+  border-right: 1.5px solid;
+}
+
+.vantor-bracket-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.vantor-bracket-btn:hover .bracket-corner {
+  border-color: #38bdf8;
+  width: 14px;
+  height: 14px;
+}
+
 @media (max-width: 768px) {
   .glass-card { padding: 1.15rem; }
   h1 { font-size: 1.75rem; }

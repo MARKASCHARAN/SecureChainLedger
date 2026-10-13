@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { AuthModal } from './components/AuthModal';
+import { HeroHomePage } from './pages/HeroHomePage';
 import { PublicVerificationPage } from './pages/PublicVerificationPage';
 import { LedgerExplorerPage } from './pages/LedgerExplorerPage';
 import { BatchesPage } from './pages/BatchesPage';
@@ -14,7 +15,8 @@ import { Database, Cpu } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('verify');
+  const [activeTab, setActiveTab] = useState<string>('home');
+  const [verifyBatchNumber, setVerifyBatchNumber] = useState<string>('');
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
   useEffect(() => {
@@ -34,7 +36,7 @@ export const App: React.FC = () => {
   const handleLogout = () => {
     clearToken();
     setUser(null);
-    setActiveTab('verify');
+    setActiveTab('home');
   };
 
   const handleLoginSuccess = (loggedInUser: User) => {
@@ -53,13 +55,30 @@ export const App: React.FC = () => {
       <Navbar
         user={user}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={(tab) => {
+          if (tab !== 'verify') setVerifyBatchNumber('');
+          setActiveTab(tab);
+        }}
         onLogout={handleLogout}
         onOpenAuth={() => setAuthModalOpen(true)}
+        onOpenSearch={() => {
+          setVerifyBatchNumber('');
+          setActiveTab('verify');
+        }}
       />
 
       <main style={{ flex: 1 }}>
-        {activeTab === 'verify' && <PublicVerificationPage />}
+        {activeTab === 'home' && (
+          <HeroHomePage
+            onNavigateToVerify={(batch) => {
+              if (batch) setVerifyBatchNumber(batch);
+              setActiveTab('verify');
+            }}
+            onNavigateToLedger={() => setActiveTab('ledger')}
+            onOpenAuth={() => setAuthModalOpen(true)}
+          />
+        )}
+        {activeTab === 'verify' && <PublicVerificationPage initialBatchNumber={verifyBatchNumber} />}
         {activeTab === 'ledger' && <LedgerExplorerPage />}
         
         {activeTab === 'batches' && (

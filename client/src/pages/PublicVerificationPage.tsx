@@ -6,8 +6,12 @@ import {
 import { api } from '../services/api';
 import type { VerificationResult } from '../types';
 
-export const PublicVerificationPage: React.FC = () => {
-  const [batchNumber, setBatchNumber] = useState('');
+interface PublicVerificationPageProps {
+  initialBatchNumber?: string;
+}
+
+export const PublicVerificationPage: React.FC<PublicVerificationPageProps> = ({ initialBatchNumber }) => {
+  const [batchNumber, setBatchNumber] = useState(initialBatchNumber || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<VerificationResult | null>(null);
@@ -38,6 +42,12 @@ export const PublicVerificationPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  React.useEffect(() => {
+    if (initialBatchNumber && initialBatchNumber.trim()) {
+      handleVerify(initialBatchNumber.trim());
+    }
+  }, [initialBatchNumber]);
 
   const handleVerifyHash = async () => {
     if (!result || !docHashInput.trim()) return;
