@@ -1,0 +1,19 @@
+{
+  "name": "securechain-ai",
+  "version": "1.0.0",
+  "description": "SecureChainLedger AI Intelligence, Anomaly Detection & Provenance Scoring Service",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0",
+    "vitest": "^2.1.8"
+  }
+}
