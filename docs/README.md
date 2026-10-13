@@ -15,6 +15,7 @@ guides/           # Onboarding, user guides, deployment walkthroughs
 
 | Document | Path |
 |:---|:---|
+| **Development Strategy & Roadmap** | `DEVELOPMENT_STRATEGY.md` |
 | System Architecture | `architecture/system-overview.md` |
 | API Reference | `api/rest-api.md` |
 | Fabric Network Setup | `architecture/fabric-network.md` |
