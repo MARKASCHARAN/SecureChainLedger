@@ -7,6 +7,8 @@ import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
 import { prisma } from './lib/prisma.js';
 
+import { startReconciler, stopReconciler } from './modules/ledger/reconciler.service.js';
+
 async function start() {
   // Verify DB connectivity before accepting traffic
   try {
@@ -17,6 +19,9 @@ async function start() {
     process.exit(1);
   }
 
+  // Start background outbox reconciler worker
+  startReconciler({ intervalMs: 5000, batchSize: 25 });
+
   const server = app.listen(env.PORT, () => {
     logger.info(`SecureChainLedger API started on port ${env.PORT} [${env.NODE_ENV}]`);
   });
@@ -24,6 +29,7 @@ async function start() {
   // ─── Graceful shutdown ────────────────────────────────────────────────────
   async function shutdown(signal) {
     logger.info(`${signal} received — shutting down gracefully`);
+    stopReconciler();
     server.close(async () => {
       await prisma.$disconnect();
       logger.info('Server and database connections closed');
