@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Layers, Plus, CheckCircle2, Truck, ShieldCheck, X } from 'lucide-react';
+import { Layers, Plus, CheckCircle2, Truck, ShieldCheck, X, Sparkles, AlertTriangle } from 'lucide-react';
 import { api } from '../services/api';
-import type { Batch, Product, User, Organization } from '../types';
+import type { Batch, Product, User, Organization, AiIntelligence } from '../types';
 
 interface BatchesPageProps {
   user: User;
@@ -13,6 +13,10 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
   const [products, setProducts] = useState<Product[]>([]);
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // AI Inspection modal state
+  const [selectedAiBatch, setSelectedAiBatch] = useState<AiIntelligence | null>(null);
+  const [aiLoadingBatchId, setAiLoadingBatchId] = useState<string | null>(null);
 
   // New batch modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -110,6 +114,18 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
     }
   };
 
+  const handleInspectAi = async (batchNumber: string) => {
+    setAiLoadingBatchId(batchNumber);
+    try {
+      const data = await api.getBatchAiAnalysis(batchNumber);
+      setSelectedAiBatch(data);
+    } catch (err: any) {
+      alert(`AI Analysis error: ${err.message}`);
+    } finally {
+      setAiLoadingBatchId(null);
+    }
+  };
+
   const isManufacturer = user.role === 'MANUFACTURER';
 
   return (
@@ -182,6 +198,7 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                   <th>Manufactured</th>
                   <th>Status</th>
                   <th>QA Certification</th>
+                  <th>AI Surveillance</th>
                   <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
@@ -226,6 +243,28 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                       ) : (
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Pending QA</span>
                       )}
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => handleInspectAi(batch.batchNumber)}
+                        disabled={aiLoadingBatchId === batch.batchNumber}
+                        className="btn"
+                        style={{
+                          background: 'rgba(56, 189, 248, 0.1)',
+                          border: '1px solid rgba(56, 189, 248, 0.3)',
+                          color: '#38bdf8',
+                          padding: '0.25rem 0.65rem',
+                          fontSize: '0.75rem',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <Sparkles size={12} />
+                        {aiLoadingBatchId === batch.batchNumber ? 'Analyzing...' : 'AI Insights'}
+                      </button>
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
@@ -433,6 +472,162 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: AI Provenance & Anomaly Surveillance */}
+      {selectedAiBatch && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1.5rem',
+          zIndex: 1000
+        }}>
+          <div className="glass-card" style={{ maxWidth: '640px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: 'rgba(56, 189, 248, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#38bdf8'
+                }}>
+                  <Sparkles size={20} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>AI Provenance Intelligence</h3>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Batch: <span className="font-mono" style={{ color: '#fff' }}>{selectedAiBatch.batchNumber}</span>
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setSelectedAiBatch(null)} className="btn" style={{ padding: '0.35rem', color: 'var(--text-muted)' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Score & Risk Level */}
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.03)',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border-subtle)',
+              padding: '1.25rem',
+              marginBottom: '1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '1rem',
+            }}>
+              <div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Provenance Integrity Score</div>
+                <div style={{
+                  fontSize: '2.25rem',
+                  fontWeight: 800,
+                  fontFamily: 'var(--font-mono)',
+                  color: selectedAiBatch.provenanceScore >= 85 ? '#34d399' : selectedAiBatch.provenanceScore >= 70 ? '#fbbf24' : '#fb7185',
+                }}>
+                  {selectedAiBatch.provenanceScore}<span style={{ fontSize: '1.1rem', color: 'var(--text-muted)' }}>/100</span>
+                </div>
+              </div>
+
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Assessed Risk Profile</div>
+                <span className={`badge ${selectedAiBatch.riskLevel === 'LOW' ? 'badge-authentic' : selectedAiBatch.riskLevel === 'MODERATE' ? 'badge-pending' : 'badge-recalled'}`} style={{ marginTop: '0.35rem', fontSize: '0.85rem' }}>
+                  {selectedAiBatch.ratingLabel}
+                </span>
+              </div>
+            </div>
+
+            {/* Anomalies List */}
+            {selectedAiBatch.anomalies && selectedAiBatch.anomalies.length > 0 ? (
+              <div style={{ marginBottom: '1.25rem' }}>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#fb7185', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <AlertTriangle size={16} /> Flagged Anomaly Signals ({selectedAiBatch.anomalies.length})
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {selectedAiBatch.anomalies.map((anom, idx) => (
+                    <div key={idx} style={{ background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.3)', borderRadius: 'var(--radius-md)', padding: '0.75rem 1rem' }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#fda4af' }}>
+                        [{anom.severity}] {anom.type.replace(/_/g, ' ')}
+                      </div>
+                      <div style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                        {anom.message}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div style={{
+                marginBottom: '1.25rem',
+                background: 'rgba(16, 185, 129, 0.08)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+                borderRadius: 'var(--radius-md)',
+                padding: '0.85rem 1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem'
+              }}>
+                <CheckCircle2 size={20} color="#34d399" />
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>
+                  <strong>Zero Anomalies Detected.</strong> Cryptographic custody flow matches authentic baseline distribution.
+                </div>
+              </div>
+            )}
+
+            {/* Audit Summary & Recommendation */}
+            {selectedAiBatch.auditSummary && (
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.02)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                padding: '1rem',
+                marginBottom: '1.25rem'
+              }}>
+                <div style={{ fontSize: '0.78rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
+                  AI Recommendation
+                </div>
+                <div style={{ fontSize: '0.925rem', color: '#e2e8f0', lineHeight: 1.5 }}>
+                  "{selectedAiBatch.auditSummary.recommendation}"
+                </div>
+              </div>
+            )}
+
+            {/* Positive & Negative Factors */}
+            {selectedAiBatch.scoreBreakdown && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.25rem' }}>
+                {selectedAiBatch.scoreBreakdown.bonuses?.map((b, i) => (
+                  <span key={i} style={{ fontSize: '0.725rem', background: 'rgba(16, 185, 129, 0.1)', color: '#a7f3d0', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                    ✓ {b}
+                  </span>
+                ))}
+                {selectedAiBatch.scoreBreakdown.deductions?.map((d, i) => (
+                  <span key={i} style={{ fontSize: '0.725rem', background: 'rgba(244, 63, 94, 0.1)', color: '#fda4af', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                    ⚠ {d}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+              <button onClick={() => setSelectedAiBatch(null)} className="btn btn-secondary">
+                Close Insights
+              </button>
+            </div>
           </div>
         </div>
       )}

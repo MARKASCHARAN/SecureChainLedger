@@ -11,6 +11,7 @@ import transferRoutes from '../modules/transfers/transfer.routes.js';
 import inventoryRoutes from '../modules/inventory/inventory.routes.js';
 import recallRoutes    from '../modules/recalls/recall.routes.js';
 import verificationRoutes from '../modules/verification/verification.routes.js';
+import aiRoutes           from '../modules/ai/ai.routes.js';
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/transfers',     transferRoutes);
 router.use('/inventory',     inventoryRoutes);
 router.use('/recalls',       recallRoutes);
 router.use('/verification',  verificationRoutes);
+router.use('/ai',            aiRoutes);
 
 export default router;

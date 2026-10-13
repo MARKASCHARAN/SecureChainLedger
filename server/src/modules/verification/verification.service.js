@@ -3,6 +3,7 @@
 
 import { prisma } from '../../lib/prisma.js';
 import { NotFoundError } from '../../lib/errors.js';
+import { evaluateBatchAi } from '../ai/ai.service.js';
 
 /**
  * Publicly verifies a batch by its human-readable batch number.
@@ -102,6 +103,19 @@ export async function verifyBatch(batchNumber, { ipAddress, userAgent, requestin
     })),
   ];
 
+  let verificationLogs = [];
+  try {
+    verificationLogs = await prisma.verificationLog.findMany({
+      where: { batchId: batch.id },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    });
+  } catch {
+    // Non-blocking
+  }
+
+  const aiIntelligence = await evaluateBatchAi(batch, batch.transfers, verificationLogs);
+
   return {
     batchNumber:       batch.batchNumber,
     verificationStatus:result,
@@ -115,6 +129,7 @@ export async function verifyBatch(batchNumber, { ipAddress, userAgent, requestin
     hasQaDocument:     Boolean(batch.qaDocumentHash),
     currentStatus:     batch.status,
     provenanceTrail,
+    aiIntelligence,
     verifiedAt:        now.toISOString(),
   };
 }

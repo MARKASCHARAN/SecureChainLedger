@@ -177,6 +177,193 @@ export const PublicVerificationPage: React.FC = () => {
             </div>
           </div>
 
+          {/* AI Intelligence & Provenance Risk Scoring */}
+          {result.aiIntelligence && (
+            <div
+              className="glass-card"
+              style={{
+                borderColor:
+                  result.aiIntelligence.riskLevel === 'LOW'
+                    ? 'rgba(56, 189, 248, 0.35)'
+                    : result.aiIntelligence.riskLevel === 'MODERATE'
+                    ? 'rgba(245, 158, 11, 0.4)'
+                    : 'rgba(244, 63, 94, 0.4)',
+                background: 'linear-gradient(135deg, rgba(13, 18, 31, 0.95), rgba(15, 23, 42, 0.85))',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: 'rgba(56, 189, 248, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#38bdf8'
+                  }}>
+                    <Sparkles size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      AI Provenance & Anomaly Intelligence
+                    </h3>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      Continuous heuristic & statistical anomaly surveillance
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{
+                    fontSize: '1.75rem',
+                    fontWeight: 800,
+                    fontFamily: 'var(--font-mono)',
+                    color:
+                      result.aiIntelligence.provenanceScore >= 85
+                        ? '#34d399'
+                        : result.aiIntelligence.provenanceScore >= 70
+                        ? '#fbbf24'
+                        : '#fb7185',
+                  }}>
+                    {result.aiIntelligence.provenanceScore}<span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/100</span>
+                  </div>
+                  <span
+                    className={`badge ${
+                      result.aiIntelligence.riskLevel === 'LOW'
+                        ? 'badge-authentic'
+                        : result.aiIntelligence.riskLevel === 'MODERATE'
+                        ? 'badge-pending'
+                        : 'badge-recalled'
+                    }`}
+                    style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem' }}
+                  >
+                    {result.aiIntelligence.ratingLabel}
+                  </span>
+                </div>
+              </div>
+
+              {/* Score Progress Bar */}
+              <div style={{
+                width: '100%',
+                height: '8px',
+                background: 'rgba(255, 255, 255, 0.08)',
+                borderRadius: '4px',
+                overflow: 'hidden',
+                marginBottom: '1.5rem'
+              }}>
+                <div style={{
+                  width: `${result.aiIntelligence.provenanceScore}%`,
+                  height: '100%',
+                  background:
+                    result.aiIntelligence.provenanceScore >= 85
+                      ? 'linear-gradient(90deg, #10b981, #34d399)'
+                      : result.aiIntelligence.provenanceScore >= 70
+                      ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+                      : 'linear-gradient(90deg, #e11d48, #f43f5e)',
+                  transition: 'width 0.8s ease-in-out'
+                }} />
+              </div>
+
+              {/* Anomaly Alerts Section */}
+              {result.aiIntelligence.anomalies && result.aiIntelligence.anomalies.length > 0 ? (
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#fb7185', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <AlertTriangle size={16} /> Anomaly Signals Flagged ({result.aiIntelligence.anomalies.length})
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {result.aiIntelligence.anomalies.map((anom, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          background: 'rgba(244, 63, 94, 0.1)',
+                          border: '1px solid rgba(244, 63, 94, 0.3)',
+                          borderRadius: 'var(--radius-md)',
+                          padding: '0.75rem 1rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '0.75rem'
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#fda4af' }}>
+                            [{anom.severity}] {anom.type.replace(/_/g, ' ')}
+                          </div>
+                          <div style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                            {anom.message}
+                          </div>
+                        </div>
+                        {anom.confidence && (
+                          <span className="badge badge-recalled" style={{ fontSize: '0.72rem' }}>
+                            {Math.round(anom.confidence * 100)}% Conf.
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div style={{
+                  marginBottom: '1.25rem',
+                  background: 'rgba(16, 185, 129, 0.08)',
+                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '0.75rem 1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}>
+                  <CheckCircle2 size={20} color="#34d399" />
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>
+                    <strong>Zero Anomaly Signals Detected.</strong> Velocity, quantity, and multi-location consumer scan patterns are consistent with authentic distribution.
+                  </div>
+                </div>
+              )}
+
+              {/* Natural Language Audit Summary & Recommendation */}
+              {result.aiIntelligence.auditSummary && (
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '1rem 1.25rem',
+                  marginBottom: '1rem',
+                }}>
+                  <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
+                    AI Recommendation & Safety Assessment
+                  </div>
+                  <div style={{ fontSize: '0.95rem', color: '#e2e8f0', lineHeight: 1.5 }}>
+                    "{result.aiIntelligence.auditSummary.recommendation}"
+                  </div>
+                </div>
+              )}
+
+              {/* Score Breakdown factors */}
+              {result.aiIntelligence.scoreBreakdown && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  {result.aiIntelligence.scoreBreakdown.bonuses?.map((b, i) => (
+                    <span key={i} style={{ fontSize: '0.75rem', background: 'rgba(16, 185, 129, 0.1)', color: '#a7f3d0', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                      ✓ {b}
+                    </span>
+                  ))}
+                  {result.aiIntelligence.scoreBreakdown.deductions?.map((d, i) => (
+                    <span key={i} style={{ fontSize: '0.75rem', background: 'rgba(244, 63, 94, 0.1)', color: '#fda4af', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(244, 63, 94, 0.2)' }}>
+                      ⚠ {d}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)', textAlign: 'right' }}>
+                {result.aiIntelligence.disclaimer}
+              </div>
+            </div>
+          )}
+
           {/* Details 2-Column Grid */}
           <div className="grid-2">
             {/* Product Card */}

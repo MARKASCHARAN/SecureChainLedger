@@ -100,6 +100,34 @@ export interface ProvenanceStep {
   timestamp?: string;
 }
 
+export interface AnomalyItem {
+  type: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  confidence?: number;
+  message: string;
+  evidence?: Record<string, any>;
+}
+
+export interface AiIntelligence {
+  batchNumber: string;
+  isAiGenerated: boolean;
+  disclaimer: string;
+  provenanceScore: number;
+  riskLevel: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
+  ratingLabel: string;
+  anomalies: AnomalyItem[];
+  scoreBreakdown?: {
+    bonuses: string[];
+    deductions: string[];
+  };
+  auditSummary?: {
+    summaryText: string;
+    keyFindings: string[];
+    recommendation: string;
+  };
+  analyzedAt: string;
+}
+
 export interface VerificationResult {
   batchNumber: string;
   verificationStatus: 'AUTHENTIC' | 'RECALLED' | 'EXPIRED' | 'UNAPPROVED' | 'NOT_FOUND';
@@ -113,6 +141,7 @@ export interface VerificationResult {
   hasQaDocument: boolean;
   currentStatus: string;
   provenanceTrail: ProvenanceStep[];
+  aiIntelligence?: AiIntelligence;
   verifiedAt: string;
 }
 
@@ -130,3 +159,4 @@ export interface Recall {
     batch: { id: string; batchNumber: string; product?: { genericName: string } };
   }[];
 }
+

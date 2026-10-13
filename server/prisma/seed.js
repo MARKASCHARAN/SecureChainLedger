@@ -121,6 +121,42 @@ async function main() {
     },
   });
 
+  // ── Demo Batch ─────────────────────────────────────────────────────────────
+  const batch = await prisma.batch.upsert({
+    where: { batchNumber: 'BATCH-2026-001' },
+    update: {},
+    create: {
+      batchNumber: 'BATCH-2026-001',
+      productId: product.id,
+      manufacturerId: manufacturer.id,
+      currentOwnerId: manufacturer.id,
+      quantity: 5000,
+      unitPrice: 12.50,
+      status: 'APPROVED',
+      qaDocumentHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      qaApprovedAt: new Date(),
+      manufacturedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 730 * 24 * 60 * 60 * 1000), // 2 years
+      storageConditions: 'Controlled room temperature (15°C to 25°C), protect from light',
+    },
+  });
+
+  await prisma.inventory.upsert({
+    where: {
+      organizationId_batchId: {
+        organizationId: manufacturer.id,
+        batchId: batch.id,
+      },
+    },
+    update: {},
+    create: {
+      organizationId: manufacturer.id,
+      batchId: batch.id,
+      quantity: 5000,
+      reservedQty: 0,
+    },
+  });
+
   console.log('✅  Seed complete!');
   console.log('');
   console.log('   Demo credentials (FAKE — development only):');
@@ -128,6 +164,7 @@ async function main() {
   console.log('   dist.admin@demo.invalid / Dev@1234!');
   console.log('   regulator@demo.invalid  / Dev@1234!');
   console.log('');
+  console.log('   Demo batch:         BATCH-2026-001');
   console.log('   Manufacturer org ID:', manufacturer.id);
   console.log('   Demo product ID:    ', product.id);
 }

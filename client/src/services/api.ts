@@ -63,6 +63,8 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ batchNumber, documentHash }),
     }),
+  getBatchAiAnalysis: (batchNumber: string) =>
+    request<any>(`/ai/batches/${encodeURIComponent(batchNumber)}/analyze`),
 
   // Products
   listProducts: () => request<{ products: any[] }>('/products'),
