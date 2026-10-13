@@ -1,8 +1,8 @@
 // client/src/components/AuthModal.tsx
 import React, { useState, useEffect } from 'react';
 import { 
-  X, ArrowRight, Lock, Mail, 
-  Building2, Eye, EyeOff, CheckCircle2, AlertCircle, Sparkles,
+  X, Mail, 
+  Eye, EyeOff, CheckCircle2, AlertCircle,
   Layers, Truck, Stethoscope, Pill, Scale
 } from 'lucide-react';
 import { api, setToken } from '../services/api';
@@ -18,44 +18,40 @@ interface AuthModalProps {
 const DEMO_PRESETS = [
   { 
     role: 'MANUFACTURER', 
-    label: 'Manufacturer Admin', 
+    label: 'Manufacturer', 
     email: 'mfr.admin@demo.invalid', 
     org: 'DEMO Pharma Pvt Ltd', 
-    badgeColor: '#38bdf8',
-    sub: 'Batch formulation & QA anchors'
+    badgeColor: '#38bdf8'
   },
   { 
     role: 'DISTRIBUTOR', 
-    label: 'Distributor Logistics', 
+    label: 'Distributor', 
     email: 'dist.admin@demo.invalid', 
     org: 'DEMO Distrib Co', 
-    badgeColor: '#34d399',
-    sub: 'Custody dispatch & transit tracking'
+    badgeColor: '#34d399'
   },
   { 
     role: 'REGULATOR', 
-    label: 'Health Regulator', 
+    label: 'Regulator', 
     email: 'regulator@demo.invalid', 
     org: 'DEMO CDSCO', 
-    badgeColor: '#fb7185',
-    sub: 'Surveillance & emergency recall'
+    badgeColor: '#fb7185'
   },
   { 
     role: 'HOSPITAL', 
-    label: 'Hospital Pharmacist', 
+    label: 'Hospital', 
     email: 'hosp.admin@demo.invalid', 
     org: 'Metro General Hospital', 
-    badgeColor: '#c084fc',
-    sub: 'Dispense verification & quarantine'
+    badgeColor: '#c084fc'
   },
 ];
 
-const ROLE_OPTIONS: { role: UserRole; label: string; icon: any; desc: string }[] = [
-  { role: 'MANUFACTURER', label: 'Manufacturer', icon: Layers, desc: 'Batch Production & QA' },
-  { role: 'DISTRIBUTOR', label: '3PL Logistics', icon: Truck, desc: 'Custody Transport' },
-  { role: 'HOSPITAL', label: 'Hospital', icon: Stethoscope, desc: 'Inpatient Dispensing' },
-  { role: 'PHARMACY', label: 'Pharmacy', icon: Pill, desc: 'Retail Verification' },
-  { role: 'REGULATOR', label: 'Regulator', icon: Scale, desc: 'Audit & Recall Mandates' },
+const ROLE_OPTIONS: { role: UserRole; label: string; icon: any }[] = [
+  { role: 'MANUFACTURER', label: 'Manufacturer', icon: Layers },
+  { role: 'DISTRIBUTOR', label: '3PL Logistics', icon: Truck },
+  { role: 'HOSPITAL', label: 'Hospital', icon: Stethoscope },
+  { role: 'PHARMACY', label: 'Pharmacy', icon: Pill },
+  { role: 'REGULATOR', label: 'Regulator', icon: Scale },
 ];
 
 export const AuthModal: React.FC<AuthModalProps> = ({ 
@@ -70,6 +66,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('Dev@1234!');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [loginStep, setLoginStep] = useState<'email' | 'password'>('email');
   
   // Register fields
   const [firstName, setFirstName] = useState('');
@@ -87,9 +85,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setMode(initialMode);
+      setLoginStep('email');
       setError(null);
       setSuccessMsg(null);
-      // Fetch organizations for registration dropdown
       api.getOrganizations()
         .then(res => {
           if (res?.organizations?.length) {
@@ -103,10 +101,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Handle Login
+  // Handle Login Step 1 ("Next") -> moves to password or logs in if preset
+  const handleEmailNext = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      setError('Please enter a valid work email address.');
+      return;
+    }
+    setError(null);
+    setLoginStep('password');
+  };
+
+  // Execute Login
   const handleLogin = async (overrideEmail?: string) => {
     const targetEmail = overrideEmail || email;
-    if (!targetEmail || !password) return;
+    if (!targetEmail || !password) {
+      setError('Please provide your password to proceed.');
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -123,6 +135,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
+  // Quick 1-Click Demo Login
+  const handlePresetSelect = (presetEmail: string) => {
+    setEmail(presetEmail);
+    setPassword('Dev@1234!');
+    setLoginStep('password');
+    handleLogin(presetEmail);
+  };
+
   // Handle Register
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,7 +151,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
-    // Password validation: 8+ chars, 1 uppercase, 1 number
     if (regPassword.length < 8) {
       setError('Password must be at least 8 characters long.');
       return;
@@ -147,7 +166,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     const orgId = selectedOrgId || (orgList[0]?.id || '');
     if (!orgId) {
-      setError('Please select or specify a valid organization.');
+      setError('Please select a valid organization entity.');
       return;
     }
 
@@ -169,9 +188,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         setTimeout(() => {
           onLoginSuccess(res.user);
           onClose();
-        }, 800);
+        }, 700);
       } else {
-        // Fallback login
         const loginData = await api.login({ email: regEmail, password: regPassword });
         setToken(loginData.accessToken);
         onLoginSuccess(loginData.user);
@@ -188,550 +206,548 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: 'rgba(0, 0, 0, 0.88)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
       zIndex: 200,
+      background: '#000000 url("/login-bg-3d.png") center center / cover no-repeat',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '1.25rem'
+      padding: '1.5rem',
+      overflowY: 'auto'
     }}>
-      {/* ─── Modal Main Window ──────────────────────────────────────────────── */}
+      {/* Subtle bottom-edge ambient shadow if desired */}
+
+      {/* ─── Top-Left Brand Logo (Matching Screenshot) ────────────────────── */}
       <div style={{
-        maxWidth: '1080px',
-        width: '100%',
-        maxHeight: '92vh',
-        background: '#04060a',
-        borderRadius: '24px',
-        border: '1px solid rgba(255, 255, 255, 0.16)',
-        boxShadow: '0 30px 100px -10px rgba(0, 0, 0, 0.9), 0 0 40px rgba(56, 189, 248, 0.12)',
-        overflow: 'hidden',
-        position: 'relative',
+        position: 'absolute',
+        top: '2.5rem',
+        left: '3rem',
         display: 'flex',
-        flexDirection: 'column'
+        alignItems: 'center',
+        gap: '0.85rem',
+        zIndex: 10
       }}>
-        {/* Close Button Top-Right */}
-        <button
-          onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '1.25rem',
-            right: '1.25rem',
-            zIndex: 30,
-            background: 'rgba(255, 255, 255, 0.08)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            color: '#ffffff',
-            borderRadius: '50%',
-            width: '36px',
-            height: '36px',
+        <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+          <path d="M11 7C7 11 4 15 4 20C4 25 7 29 11 33" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+          <path d="M29 7C33 11 36 15 36 20C36 25 33 29 29 33" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="20" cy="20" r="7.5" stroke="#ffffff" strokeWidth="3" />
+        </svg>
+        <span style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.03em', color: '#ffffff' }}>
+          SecureChain
+        </span>
+      </div>
+
+      {/* ─── Top-Right Close Button ───────────────────────────────────────── */}
+      <button
+        onClick={onClose}
+        style={{
+          position: 'absolute',
+          top: '2.5rem',
+          right: '3rem',
+          zIndex: 10,
+          background: 'rgba(255, 255, 255, 0.08)',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          color: '#ffffff',
+          borderRadius: '50%',
+          width: '40px',
+          height: '40px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease'
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
+        aria-label="Close modal"
+      >
+        <X size={20} />
+      </button>
+
+      {/* ─── Centered Auth Card (Matching Screenshot Exact Look) ──────────── */}
+      <div style={{
+        position: 'relative',
+        zIndex: 5,
+        background: '#000000',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        borderRadius: '12px',
+        maxWidth: '560px',
+        width: '100%',
+        padding: 'clamp(2.25rem, 5vw, 3.75rem)',
+        boxShadow: '0 30px 90px rgba(0, 0, 0, 0.95), 0 0 40px rgba(168, 85, 247, 0.15)'
+      }}>
+        {/* Mode Switcher Tabs */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1.75rem',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
+          marginBottom: '2rem'
+        }}>
+          <button
+            type="button"
+            onClick={() => { setMode('login'); setError(null); }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontSize: '1rem',
+              fontWeight: mode === 'login' ? 700 : 500,
+              color: mode === 'login' ? '#ffffff' : 'rgba(255, 255, 255, 0.45)',
+              padding: '0.6rem 0.2rem',
+              cursor: 'pointer',
+              position: 'relative',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Sign In
+            {mode === 'login' && (
+              <span style={{
+                position: 'absolute',
+                left: 0,
+                bottom: -1,
+                width: '100%',
+                height: '2px',
+                background: '#a855f7',
+                borderRadius: '1px'
+              }} />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setMode('register'); setError(null); }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontSize: '1rem',
+              fontWeight: mode === 'register' ? 700 : 500,
+              color: mode === 'register' ? '#ffffff' : 'rgba(255, 255, 255, 0.45)',
+              padding: '0.6rem 0.2rem',
+              cursor: 'pointer',
+              position: 'relative',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Register Node
+            {mode === 'register' && (
+              <span style={{
+                position: 'absolute',
+                left: 0,
+                bottom: -1,
+                width: '100%',
+                height: '2px',
+                background: '#a855f7',
+                borderRadius: '1px'
+              }} />
+            )}
+          </button>
+        </div>
+
+        {/* Error / Success Feedback */}
+        {error && (
+          <div style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
-          aria-label="Close authentication modal"
-        >
-          <X size={18} />
-        </button>
-
-        {/* ─── Two-Column Responsive Layout ─────────────────────────────────── */}
-        <div className="auth-terminal-grid" style={{ flex: 1, overflowY: 'auto' }}>
-          {/* Left Panel: Cinematic Video & Node Telemetry HUD */}
-          <div className="auth-left-panel" style={{
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            padding: '3rem 2.5rem',
-            borderRight: '1px solid rgba(255, 255, 255, 0.1)'
+            gap: '0.65rem',
+            background: 'rgba(244, 63, 94, 0.12)',
+            border: '1px solid rgba(244, 63, 94, 0.35)',
+            borderRadius: '6px',
+            padding: '0.8rem 1rem',
+            color: '#fda4af',
+            fontSize: '0.85rem',
+            marginBottom: '1.5rem'
           }}>
-            {/* Background Video */}
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                zIndex: 0,
-                filter: 'brightness(0.68) contrast(1.1)'
-              }}
-            >
-              <source src="/HomeVideo.mp4" type="video/mp4" />
-            </video>
-
-            {/* Cinematic Vignette */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.65) 0%, rgba(4, 6, 10, 0.4) 40%, rgba(4, 6, 10, 0.95) 100%)',
-              zIndex: 1,
-              pointerEvents: 'none'
-            }} />
-
-            {/* Brand Header */}
-            <div style={{ position: 'relative', zIndex: 2 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
-                  <path d="M11 7C7 11 4 15 4 20C4 25 7 29 11 33" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
-                  <path d="M29 7C33 11 36 15 36 20C36 25 33 29 29 33" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
-                  <circle cx="20" cy="20" r="7.5" stroke="#ffffff" strokeWidth="3" />
-                </svg>
-                <span style={{ fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.03em', color: '#ffffff' }}>
-                  SecureChain
-                </span>
-              </div>
-
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(8px)',
-                padding: '0.35rem 0.75rem',
-                borderRadius: '100px',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: '#ffffff',
-                border: '1px solid rgba(255, 255, 255, 0.15)'
-              }}>
-                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
-                Hyperledger Fabric 2.5 • Cryptographic Gateway
-              </div>
-            </div>
-
-            {/* Middle Message */}
-            <div style={{ position: 'relative', zIndex: 2, margin: '2.5rem 0' }}>
-              <h3 style={{
-                fontSize: 'clamp(1.5rem, 2.2vw, 2rem)',
-                lineHeight: 1.2,
-                fontWeight: 700,
-                color: '#ffffff',
-                marginBottom: '1rem',
-                letterSpacing: '-0.02em'
-              }}>
-                Total clarity from source to patient
-              </h3>
-              <p style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '0.9rem', lineHeight: 1.6 }}>
-                Enterprise permissioned chaincode and real-time AI anomaly detection engineered for verifiable, counterfeit-proof medicine supply chains.
-              </p>
-            </div>
-
-            {/* Bottom Telemetry HUD Card */}
-            <div style={{
-              position: 'relative',
-              zIndex: 2,
-              background: 'rgba(0, 0, 0, 0.65)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              borderRadius: '14px',
-              padding: '1.25rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#38bdf8', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.65rem' }}>
-                <Sparkles size={14} />
-                <span>CONSENSUS & AUDIT TELEMETRY</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.78rem', color: '#cbd5e1' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#94a3b8' }}>Channel Status:</span>
-                  <span style={{ color: '#34d399', fontWeight: 600 }}>pharma-channel (mTLS Active)</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#94a3b8' }}>Consensus Protocol:</span>
-                  <span style={{ color: '#ffffff', fontWeight: 600 }}>Raft Quorum (3/3 Synced)</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#94a3b8' }}>AI Surveillance:</span>
-                  <span style={{ color: '#38bdf8', fontWeight: 600 }}>0–100 Trust Score Radar</span>
-                </div>
-              </div>
-            </div>
+            <AlertCircle size={16} style={{ flexShrink: 0 }} />
+            <span>{error}</span>
           </div>
+        )}
 
-          {/* Right Panel: Interactive Authentication Terminal */}
+        {successMsg && (
           <div style={{
-            background: '#04060a',
-            padding: '2.5rem 3rem',
             display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center'
+            alignItems: 'center',
+            gap: '0.65rem',
+            background: 'rgba(16, 185, 129, 0.12)',
+            border: '1px solid rgba(16, 185, 129, 0.35)',
+            borderRadius: '6px',
+            padding: '0.8rem 1rem',
+            color: '#6ee7b7',
+            fontSize: '0.85rem',
+            marginBottom: '1.5rem'
           }}>
-            {/* Mode Switcher Tabs */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1.5rem',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+            <span>{successMsg}</span>
+          </div>
+        )}
+
+        {/* ══════════ LOGIN FLOW ════════════════════════════════════════════ */}
+        {mode === 'login' && (
+          <div>
+            {/* Title (Matching Screenshot Headline) */}
+            <h1 style={{
+              fontSize: 'clamp(1.75rem, 3.2vw, 2.25rem)',
+              fontWeight: 700,
+              letterSpacing: '-0.025em',
+              color: '#ffffff',
+              marginBottom: '0.9rem',
+              lineHeight: 1.2
+            }}>
+              Login to your SecureChain account
+            </h1>
+
+            {/* Subtitle (Matching Screenshot Paragraph) */}
+            <p style={{
+              color: 'rgba(255, 255, 255, 0.72)',
+              fontSize: '0.925rem',
+              lineHeight: 1.55,
               marginBottom: '2rem'
             }}>
-              <button
-                type="button"
-                onClick={() => { setMode('login'); setError(null); }}
-                className={`auth-tab-btn ${mode === 'login' ? 'active' : ''}`}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => { setMode('register'); setError(null); }}
-                className={`auth-tab-btn ${mode === 'register' ? 'active' : ''}`}
-              >
-                Create Account
-              </button>
+              Enterprise Provenance is now the SecureChain Hub. Use the same credentials to log in. No change to our API keys. Reach out to support@securechain.io with any questions.
+            </p>
+
+            {/* Quick One-Click Demo Personas (Sleek horizontal badge pills) */}
+            <div style={{ marginBottom: '1.75rem' }}>
+              <div style={{ fontSize: '0.725rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.55rem' }}>
+                One-Click Demo Accounts
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                {DEMO_PRESETS.map(preset => (
+                  <button
+                    key={preset.role}
+                    type="button"
+                    onClick={() => handlePresetSelect(preset.email)}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      borderRadius: '100px',
+                      padding: '0.35rem 0.8rem',
+                      color: '#ffffff',
+                      fontSize: '0.78rem',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.45rem',
+                      transition: 'all 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#a855f7'; e.currentTarget.style.background = 'rgba(168, 85, 247, 0.1)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; }}
+                  >
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: preset.badgeColor }} />
+                    <span>{preset.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Error & Success Feedback Banners */}
-            {error && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.65rem',
-                background: 'rgba(244, 63, 94, 0.12)',
-                border: '1px solid rgba(244, 63, 94, 0.35)',
-                borderRadius: '8px',
-                padding: '0.85rem 1rem',
-                color: '#fda4af',
-                fontSize: '0.85rem',
-                marginBottom: '1.5rem'
-              }}>
-                <AlertCircle size={17} style={{ flexShrink: 0 }} />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {successMsg && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.65rem',
-                background: 'rgba(16, 185, 129, 0.12)',
-                border: '1px solid rgba(16, 185, 129, 0.35)',
-                borderRadius: '8px',
-                padding: '0.85rem 1rem',
-                color: '#6ee7b7',
-                fontSize: '0.85rem',
-                marginBottom: '1.5rem'
-              }}>
-                <CheckCircle2 size={17} style={{ flexShrink: 0 }} />
-                <span>{successMsg}</span>
-              </div>
-            )}
-
-            {/* ══════════ MODE: LOGIN ══════════════════════════════════════════ */}
-            {mode === 'login' && (
-              <div>
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <h2 style={{ fontSize: '1.65rem', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: '0.4rem' }}>
-                    Enterprise Portal Access
-                  </h2>
-                  <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
-                    Select a verified stakeholder role or authenticate with your email credentials.
-                  </p>
+            {/* Step 1: Email Form */}
+            {loginStep === 'email' && (
+              <form onSubmit={handleEmailNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.4rem' }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '0.88rem',
+                    fontWeight: 500,
+                    color: '#cbd5e1',
+                    marginBottom: '0.5rem'
+                  }}>
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    className="vantor-input"
+                    placeholder="name@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoFocus
+                  />
                 </div>
 
-                {/* Quick 1-Click Demo Personas (Grid) */}
-                <div style={{ marginBottom: '1.75rem' }}>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
-                    Quick One-Click Demo Personas
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.6rem' }}>
-                    {DEMO_PRESETS.map((preset) => (
-                      <button
-                        key={preset.role}
-                        type="button"
-                        onClick={() => {
-                          setEmail(preset.email);
-                          setPassword('Dev@1234!');
-                          handleLogin(preset.email);
-                        }}
-                        disabled={loading}
-                        className="demo-persona-card"
-                      >
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
-                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: preset.badgeColor }} />
-                            <span style={{ fontSize: '0.825rem', fontWeight: 600, color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {preset.label}
-                            </span>
-                          </div>
-                          <div style={{ fontSize: '0.72rem', color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {preset.org}
-                          </div>
-                        </div>
-                        <ArrowRight size={14} color="#64748b" style={{ flexShrink: 0 }} />
-                      </button>
-                    ))}
-                  </div>
+                {/* Remember Me Checkbox */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <input
+                    type="checkbox"
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      accentColor: '#a855f7',
+                      cursor: 'pointer',
+                      borderRadius: '3px'
+                    }}
+                  />
+                  <label htmlFor="rememberMe" style={{ fontSize: '0.88rem', color: '#e2e8f0', cursor: 'pointer' }}>
+                    Remember me
+                  </label>
                 </div>
 
-                {/* Divider */}
+                {/* Purple Outline Button: Next */}
+                <div style={{ paddingTop: '0.5rem' }}>
+                  <button
+                    type="submit"
+                    className="vantor-purple-btn"
+                  >
+                    <span>Next</span>
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Step 2: Password Form */}
+            {loginStep === 'password' && (
+              <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} style={{ display: 'flex', flexDirection: 'column', gap: '1.4rem' }}>
+                {/* Selected Email Display with Change Link */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '1rem',
-                  margin: '1.5rem 0',
-                  color: '#475569',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  letterSpacing: '0.04em'
+                  justifyContent: 'space-between',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  padding: '0.65rem 0.95rem',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
-                  <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
-                  <span>OR ENTER CREDENTIALS</span>
-                  <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Mail size={15} color="#94a3b8" />
+                    <span style={{ fontSize: '0.88rem', color: '#ffffff', fontWeight: 500 }}>{email}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLoginStep('email')}
+                    style={{ background: 'none', border: 'none', color: '#a855f7', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    Change
+                  </button>
                 </div>
 
-                {/* Standard Manual Login Form */}
-                <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.4rem' }}>
-                      Enterprise Email
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <label style={{ fontSize: '0.88rem', fontWeight: 500, color: '#cbd5e1' }}>
+                      Password
                     </label>
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type="email"
-                        className="auth-input"
-                        placeholder="e.g. mfr.admin@demo.invalid"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        style={{ paddingLeft: '2.5rem' }}
-                      />
-                      <Mail size={16} color="#64748b" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                      <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1' }}>
-                        Password
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setPassword('Dev@1234!')}
-                        style={{ background: 'none', border: 'none', color: '#38bdf8', fontSize: '0.75rem', cursor: 'pointer' }}
-                      >
-                        Reset to Demo
-                      </button>
-                    </div>
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        className="auth-input"
-                        placeholder="••••••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        style={{ paddingLeft: '2.5rem', paddingRight: '2.5rem' }}
-                      />
-                      <Lock size={16} color="#64748b" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        style={{ position: 'absolute', right: '0.85rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}
-                      >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Vantor Signature Bracket Button for Submit */}
-                  <div style={{ paddingTop: '0.5rem' }}>
                     <button
-                      type="submit"
-                      disabled={loading || !email}
-                      className="vantor-bracket-btn"
-                      style={{ width: '100%', padding: '0.95rem 2rem' }}
+                      type="button"
+                      onClick={() => setPassword('Dev@1234!')}
+                      style={{ background: 'none', border: 'none', color: '#a855f7', fontSize: '0.78rem', cursor: 'pointer' }}
                     >
-                      <span className="bracket-corner tl" />
-                      <span className="bracket-corner tr" />
-                      <span className="bracket-corner bl" />
-                      <span className="bracket-corner br" />
-                      <span style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                        {loading ? 'Authenticating...' : 'Sign In to Portal'}
-                        <ArrowRight size={16} />
-                      </span>
+                      Fill Default Demo
                     </button>
                   </div>
-                </form>
-              </div>
-            )}
-
-            {/* ══════════ MODE: REGISTER ═══════════════════════════════════════ */}
-            {mode === 'register' && (
-              <div>
-                <div style={{ marginBottom: '1.25rem' }}>
-                  <h2 style={{ fontSize: '1.65rem', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: '0.4rem' }}>
-                    Register Stakeholder Node
-                  </h2>
-                  <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
-                    Enroll your organization into the permissioned pharmaceutical ledger.
-                  </p>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      className="vantor-input"
+                      placeholder="••••••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      autoFocus
+                      style={{ paddingRight: '2.5rem' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.85rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: '#64748b',
+                        cursor: 'pointer'
+                      }}
+                      aria-label="Toggle password visibility"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </div>
 
-                <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {/* Stakeholder Role Selector */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.45rem' }}>
-                      Stakeholder Role
-                    </label>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.4rem' }}>
-                      {ROLE_OPTIONS.map((item) => {
-                        const Icon = item.icon;
-                        const isSelected = regRole === item.role;
-                        return (
-                          <button
-                            key={item.role}
-                            type="button"
-                            onClick={() => setRegRole(item.role)}
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              padding: '0.65rem 0.4rem',
-                              background: isSelected ? 'rgba(56, 189, 248, 0.12)' : 'rgba(255, 255, 255, 0.03)',
-                              border: isSelected ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.08)',
-                              borderRadius: '8px',
-                              cursor: 'pointer',
-                              transition: 'all 0.15s ease'
-                            }}
-                          >
-                            <Icon size={16} color={isSelected ? '#38bdf8' : '#94a3b8'} style={{ marginBottom: '0.2rem' }} />
-                            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: isSelected ? '#ffffff' : '#cbd5e1' }}>
-                              {item.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <input
+                    type="checkbox"
+                    id="rememberMe2"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      accentColor: '#a855f7',
+                      cursor: 'pointer',
+                      borderRadius: '3px'
+                    }}
+                  />
+                  <label htmlFor="rememberMe2" style={{ fontSize: '0.88rem', color: '#e2e8f0', cursor: 'pointer' }}>
+                    Remember me
+                  </label>
+                </div>
 
-                  {/* Name Fields (2 Columns) */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.35rem' }}>
-                        First Name
-                      </label>
-                      <input
-                        type="text"
-                        className="auth-input"
-                        placeholder="John"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.35rem' }}>
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        className="auth-input"
-                        placeholder="Doe"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {/* Work Email */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.35rem' }}>
-                      Work Email
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type="email"
-                        className="auth-input"
-                        placeholder="john.doe@company.com"
-                        value={regEmail}
-                        onChange={(e) => setRegEmail(e.target.value)}
-                        required
-                        style={{ paddingLeft: '2.5rem' }}
-                      />
-                      <Mail size={16} color="#64748b" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
-                    </div>
-                  </div>
-
-                  {/* Organization Selection */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.35rem' }}>
-                      Organization Entity
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <select
-                        className="auth-input"
-                        value={selectedOrgId}
-                        onChange={(e) => setSelectedOrgId(e.target.value)}
-                        style={{ paddingLeft: '2.5rem', appearance: 'none', background: '#090d16', color: '#ffffff' }}
-                      >
-                        {orgList.map(org => (
-                          <option key={org.id} value={org.id} style={{ background: '#090d16', color: '#ffffff' }}>
-                            {org.name} ({org.type})
-                          </option>
-                        ))}
-                      </select>
-                      <Building2 size={16} color="#64748b" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
-                    </div>
-                  </div>
-
-                  {/* Password with Requirement Feedback */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.35rem' }}>
-                      Password (min 8 chars, 1 uppercase, 1 number)
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type="password"
-                        className="auth-input"
-                        placeholder="e.g. SecurePass2026!"
-                        value={regPassword}
-                        onChange={(e) => setRegPassword(e.target.value)}
-                        required
-                        style={{ paddingLeft: '2.5rem' }}
-                      />
-                      <Lock size={16} color="#64748b" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
-                    </div>
-                  </div>
-
-                  {/* Submit Bracket Button */}
-                  <div style={{ paddingTop: '0.4rem' }}>
-                    <button
-                      type="submit"
-                      disabled={loading || !regEmail || !regPassword || !firstName || !lastName}
-                      className="vantor-bracket-btn"
-                      style={{ width: '100%', padding: '0.95rem 2rem' }}
-                    >
-                      <span className="bracket-corner tl" />
-                      <span className="bracket-corner tr" />
-                      <span className="bracket-corner bl" />
-                      <span className="bracket-corner br" />
-                      <span style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                        {loading ? 'Registering Node...' : 'Create Enterprise Account'}
-                        <ArrowRight size={16} />
-                      </span>
-                    </button>
-                  </div>
-                </form>
-              </div>
+                {/* Purple Outline Button: Sign In */}
+                <div style={{ paddingTop: '0.5rem' }}>
+                  <button
+                    type="submit"
+                    disabled={loading || !password}
+                    className="vantor-purple-btn"
+                  >
+                    <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
+                  </button>
+                </div>
+              </form>
             )}
           </div>
-        </div>
+        )}
+
+        {/* ══════════ REGISTER FLOW ═════════════════════════════════════════ */}
+        {mode === 'register' && (
+          <div>
+            <h1 style={{
+              fontSize: 'clamp(1.65rem, 3vw, 2.1rem)',
+              fontWeight: 700,
+              letterSpacing: '-0.025em',
+              color: '#ffffff',
+              marginBottom: '0.9rem',
+              lineHeight: 1.2
+            }}>
+              Register your SecureChain account
+            </h1>
+
+            <p style={{
+              color: 'rgba(255, 255, 255, 0.72)',
+              fontSize: '0.925rem',
+              lineHeight: 1.55,
+              marginBottom: '1.75rem'
+            }}>
+              Provision your organization identity on the Hyperledger Fabric 2.5 consortium network.
+            </p>
+
+            <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
+              {/* Role Options */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: '#cbd5e1', marginBottom: '0.45rem' }}>
+                  Stakeholder Role
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(95px, 1fr))', gap: '0.35rem' }}>
+                  {ROLE_OPTIONS.map((item) => {
+                    const isSelected = regRole === item.role;
+                    return (
+                      <button
+                        key={item.role}
+                        type="button"
+                        onClick={() => setRegRole(item.role)}
+                        style={{
+                          padding: '0.55rem 0.35rem',
+                          background: isSelected ? 'rgba(168, 85, 247, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                          border: isSelected ? '1.5px solid #a855f7' : '1px solid rgba(255, 255, 255, 0.1)',
+                          borderRadius: '6px',
+                          color: isSelected ? '#ffffff' : '#94a3b8',
+                          fontSize: '0.78rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Names 2 Columns */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    className="vantor-input"
+                    placeholder="Jane"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    className="vantor-input"
+                    placeholder="Doe"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Work Email */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  Work Email
+                </label>
+                <input
+                  type="email"
+                  className="vantor-input"
+                  placeholder="jane.doe@organization.com"
+                  value={regEmail}
+                  onChange={(e) => setRegEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Organization Entity */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  Organization Entity
+                </label>
+                <select
+                  className="vantor-input"
+                  value={selectedOrgId}
+                  onChange={(e) => setSelectedOrgId(e.target.value)}
+                  style={{ appearance: 'none', background: '#000000', color: '#ffffff' }}
+                >
+                  {orgList.map(org => (
+                    <option key={org.id} value={org.id} style={{ background: '#0a0a0a', color: '#ffffff' }}>
+                      {org.name} ({org.type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Password */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  Password (min 8 chars, 1 uppercase, 1 number)
+                </label>
+                <input
+                  type="password"
+                  className="vantor-input"
+                  placeholder="••••••••••••"
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Purple Outline Button: Create Account */}
+              <div style={{ paddingTop: '0.5rem' }}>
+                <button
+                  type="submit"
+                  disabled={loading || !regEmail || !regPassword || !firstName || !lastName}
+                  className="vantor-purple-btn"
+                >
+                  <span>{loading ? 'Creating Account...' : 'Create Account'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );

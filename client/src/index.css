@@ -649,3 +649,52 @@ tr:hover td {
   transform: translateY(-1px);
 }
 
+/* Original Vantor Purple Auth Button & Form Inputs */
+.vantor-purple-btn {
+  background: rgba(168, 85, 247, 0.08);
+  border: 1.5px solid #a855f7;
+  color: #c084fc;
+  padding: 0.85rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justifyContent: center;
+  gap: 0.5rem;
+  outline: none;
+}
+
+.vantor-purple-btn:hover {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: #c084fc;
+  color: #ffffff;
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.45);
+}
+
+.vantor-purple-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.vantor-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.vantor-input:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.3);
+}
+
