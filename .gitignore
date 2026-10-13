@@ -44,3 +44,4 @@ channel-artifacts/
 *.pem
 *.key
 *.cert
+AGENTS.md

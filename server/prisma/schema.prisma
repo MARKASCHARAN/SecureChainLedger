@@ -1,0 +1,363 @@
+// prisma/schema.prisma
+// SecureChainLedger — Database schema
+// All timestamps use @updatedAt / @default(now()) via Prisma.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum OrgType {
+  MANUFACTURER
+  DISTRIBUTOR
+  HOSPITAL
+  PHARMACY
+  REGULATOR
+}
+
+enum OrgStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum UserRole {
+  MANUFACTURER
+  DISTRIBUTOR
+  HOSPITAL
+  PHARMACY
+  REGULATOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum BatchStatus {
+  DRAFT
+  PENDING_QA
+  APPROVED
+  IN_TRANSIT
+  DELIVERED
+  RECALLED
+  EXPIRED
+}
+
+enum TransferStatus {
+  INITIATED
+  IN_TRANSIT
+  DELIVERED
+  REJECTED
+  CANCELLED
+}
+
+enum RecallStatus {
+  INITIATED
+  NOTIFIED
+  ACKNOWLEDGED
+  CLOSED
+}
+
+enum LedgerTxStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+enum LedgerEventType {
+  BATCH_CREATED
+  BATCH_APPROVED
+  CUSTODY_TRANSFERRED
+  RECEIPT_CONFIRMED
+  RECALL_INITIATED
+  RECALL_ACKNOWLEDGED
+  BATCH_VERIFIED
+}
+
+// ─── Organizations ─────────────────────────────────────────────────────────────
+
+model Organization {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  type        OrgType
+  status      OrgStatus @default(PENDING)
+  licenseNo   String?   @unique
+  address     String?
+  city        String?
+  state       String?
+  country     String    @default("India")
+  contactName String?
+  contactEmail String?
+  fabricMspId String?   @unique // Hyperledger Fabric MSP identity
+
+  users       User[]
+  products    Product[]
+  batches     Batch[]
+  sentTransfers     Transfer[] @relation("SenderOrg")
+  receivedTransfers Transfer[] @relation("ReceiverOrg")
+  inventory         Inventory[]
+  recallsInitiated  Recall[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type, status])
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+
+model User {
+  id             String     @id @default(cuid())
+  email          String     @unique
+  passwordHash   String     // argon2 hash — never plaintext
+  firstName      String
+  lastName       String
+  role           UserRole
+  status         UserStatus @default(ACTIVE)
+  organizationId String
+
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  refreshSessions RefreshSession[]
+  auditLogs       AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([organizationId, role])
+}
+
+// Revocable refresh-token sessions (one row per active device/session)
+model RefreshSession {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique // SHA-256 hash of the raw refresh token
+  expiresAt DateTime
+  userAgent String?
+  ipAddress String?
+  revokedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+// ─── Products ─────────────────────────────────────────────────────────────────
+
+model Product {
+  id               String @id @default(cuid())
+  genericName      String
+  brandName        String
+  formulation      String  // e.g. Tablet, Syrup, Injection
+  strength         String  // e.g. 500mg
+  manufacturerId   String
+  scheduledDrug    Boolean @default(false) // Narcotic / Schedule H
+
+  manufacturer     Organization @relation(fields: [manufacturerId], references: [id])
+  batches          Batch[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([manufacturerId])
+}
+
+// ─── Batches ──────────────────────────────────────────────────────────────────
+
+model Batch {
+  id                String      @id @default(cuid())
+  batchNumber       String      @unique
+  productId         String
+  manufacturerId    String
+  quantity          Int
+  unitPrice         Decimal     @db.Decimal(10, 2)
+  manufacturedAt    DateTime
+  expiresAt         DateTime
+  status            BatchStatus @default(DRAFT)
+  qaApprovedAt      DateTime?
+  qaApprovedBy      String?
+  qaDocumentHash    String?     // Off-chain QA document hash anchored on ledger
+  storageConditions String?
+  currentOwnerId    String      // Always reflects latest custody
+
+  product           Product      @relation(fields: [productId], references: [id])
+  manufacturer      Organization @relation(fields: [manufacturerId], references: [id])
+  transfers         Transfer[]
+  recallBatches     RecallBatch[]
+  inventoryEntries  Inventory[]
+  ledgerTxs         LedgerTransaction[]
+  verificationLogs  VerificationLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, expiresAt])
+  @@index([manufacturerId])
+  @@index([currentOwnerId])
+}
+
+// ─── Transfers (Custody) ──────────────────────────────────────────────────────
+
+model Transfer {
+  id              String         @id @default(cuid())
+  batchId         String
+  senderId        String
+  receiverId      String
+  quantity        Int
+  status          TransferStatus @default(INITIATED)
+  shippedAt       DateTime?
+  receivedAt      DateTime?
+  notes           String?
+  ledgerTxStatus  LedgerTxStatus @default(PENDING)
+  ledgerTxId      String?        // Fabric transaction ID once confirmed
+
+  batch    Batch        @relation(fields: [batchId], references: [id])
+  sender   Organization @relation("SenderOrg", fields: [senderId], references: [id])
+  receiver Organization @relation("ReceiverOrg", fields: [receiverId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([batchId])
+  @@index([senderId])
+  @@index([receiverId, status])
+}
+
+// ─── Inventory ─────────────────────────────────────────────────────────────────
+
+model Inventory {
+  id             String  @id @default(cuid())
+  organizationId String
+  batchId        String
+  quantity       Int
+  reservedQty    Int     @default(0)
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  batch          Batch        @relation(fields: [batchId], references: [id])
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, batchId])
+  @@index([organizationId])
+}
+
+// ─── Recalls ──────────────────────────────────────────────────────────────────
+
+model Recall {
+  id              String       @id @default(cuid())
+  reason          String
+  description     String?
+  status          RecallStatus @default(INITIATED)
+  initiatorId     String       // Organization that triggered the recall
+  initiatedAt     DateTime     @default(now())
+  closedAt        DateTime?
+  ledgerTxStatus  LedgerTxStatus @default(PENDING)
+  ledgerTxId      String?
+
+  initiator       Organization  @relation(fields: [initiatorId], references: [id])
+  affectedBatches RecallBatch[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Junction: which batches are affected by a recall
+model RecallBatch {
+  recallId        String
+  batchId         String
+  acknowledgedAt  DateTime?
+  acknowledgedBy  String?
+
+  recall Recall @relation(fields: [recallId], references: [id])
+  batch  Batch  @relation(fields: [batchId], references: [id])
+
+  @@id([recallId, batchId])
+}
+
+// ─── Audit Logs ───────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String @id @default(cuid())
+  userId     String?
+  action     String // e.g. "auth.login", "batch.create", "transfer.initiate"
+  entityType String?
+  entityId   String?
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+
+  user      User?   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+}
+
+// ─── Ledger Transactions ──────────────────────────────────────────────────────
+
+model LedgerTransaction {
+  id          String          @id @default(cuid())
+  batchId     String?
+  eventType   LedgerEventType
+  status      LedgerTxStatus  @default(PENDING)
+  fabricTxId  String?         @unique // Set once Fabric confirms
+  payload     Json            // What was submitted to the ledger
+  errorMsg    String?
+  retryCount  Int             @default(0)
+  confirmedAt DateTime?
+
+  batch Batch? @relation(fields: [batchId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([batchId])
+}
+
+// Transactional Outbox — ensures reliable delivery to Fabric even on restart
+model OutboxEvent {
+  id          String   @id @default(cuid())
+  eventType   String
+  aggregateId String
+  payload     Json
+  processedAt DateTime?
+  failedAt    DateTime?
+  retryCount  Int      @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([processedAt, failedAt])
+}
+
+// ─── Verification Logs ─────────────────────────────────────────────────────────
+
+model VerificationLog {
+  id          String  @id @default(cuid())
+  batchId     String
+  requestedBy String? // null for anonymous public scans
+  result      String  // "AUTHENTIC" | "NOT_FOUND" | "RECALLED" | "EXPIRED"
+  ipAddress   String?
+  userAgent   String?
+
+  batch Batch @relation(fields: [batchId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([batchId])
+}
