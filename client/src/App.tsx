@@ -56,8 +56,16 @@ export const App: React.FC = () => {
     }
   };
 
+  const isWorkspaceView = user !== null && activeTab !== 'home';
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
+      background: isWorkspaceView ? '#f8fafc' : undefined,
+      color: isWorkspaceView ? '#0f172a' : undefined
+    }}>
       <Navbar
         user={user}
         activeTab={activeTab}
@@ -73,7 +81,7 @@ export const App: React.FC = () => {
         }}
       />
 
-      <main style={{ flex: 1 }}>
+      <main style={{ flex: 1, background: isWorkspaceView ? '#f8fafc' : undefined }}>
         {activeTab === 'home' && (
           <HeroHomePage
             onNavigateToVerify={(batch) => {
@@ -132,39 +140,41 @@ export const App: React.FC = () => {
         )}
       </main>
 
-      {/* Footer */}
-      <footer style={{
-        borderTop: '1px solid var(--border-subtle)',
-        background: 'rgba(7, 9, 14, 0.95)',
-        padding: '2rem 1.5rem',
-        marginTop: 'auto',
-      }}>
-        <div style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          fontSize: '0.85rem',
-          color: 'var(--text-muted)'
+      {/* Footer: Dedicated clean light footer for authenticated workspace */}
+      {isWorkspaceView && (
+        <footer style={{
+          borderTop: '1px solid #e2e8f0',
+          background: '#ffffff',
+          padding: '1.25rem 2rem',
+          marginTop: 'auto',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontWeight: 700, color: '#fff' }}>SecureChainLedger</span>
-            <span>— Dual-layer Pharmaceutical Supply Chain Architecture</span>
-          </div>
+          <div style={{
+            maxWidth: '1440px',
+            margin: '0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            fontSize: '0.825rem',
+            color: '#64748b'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontWeight: 700, color: '#0f172a' }}>SecureChainLedger</span>
+              <span>— Dual-layer Cryptographic Pharmaceutical Supply Chain Architecture</span>
+            </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <Cpu size={14} color="#38bdf8" /> Hyperledger Fabric
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <Database size={14} color="#34d399" /> PostgreSQL
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#0284c7', fontWeight: 600 }}>
+                <Cpu size={14} color="#0284c7" /> Hyperledger Fabric 2.5
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#059669', fontWeight: 600 }}>
+                <Database size={14} color="#059669" /> PostgreSQL
+              </span>
+            </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      )}
 
       <AuthModal
         isOpen={authModalOpen}

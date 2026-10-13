@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Layers, Plus, CheckCircle2, Truck, ShieldCheck, X, Sparkles, AlertTriangle, Package } from 'lucide-react';
+// client/src/pages/BatchesPage.tsx
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Layers, Plus, CheckCircle2, Truck, ShieldCheck, 
+  X, Sparkles, AlertTriangle, Package, Search
+} from 'lucide-react';
 import { api } from '../services/api';
 import type { Batch, Product, User, Organization, AiIntelligence } from '../types';
 
@@ -13,6 +17,10 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
   const [products, setProducts] = useState<Product[]>([]);
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Search & Filter controls
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
   // AI Inspection modal state
   const [selectedAiBatch, setSelectedAiBatch] = useState<AiIntelligence | null>(null);
@@ -163,81 +171,252 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
 
   const isManufacturer = user.role === 'MANUFACTURER';
 
+  // Filtered batch rows
+  const filteredBatches = useMemo(() => {
+    return batches.filter(b => {
+      const query = searchQuery.trim().toLowerCase();
+      const matchesQuery = !query || 
+        b.batchNumber.toLowerCase().includes(query) ||
+        b.product?.brandName?.toLowerCase().includes(query) ||
+        b.product?.genericName?.toLowerCase().includes(query);
+      
+      const matchesStatus = statusFilter === 'ALL' || b.status === statusFilter;
+      return matchesQuery && matchesStatus;
+    });
+  }, [batches, searchQuery, statusFilter]);
+
   return (
-    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem 1.5rem' }}>
-      {/* Header bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>Pharmaceutical Batch Registry</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-            Anchored batches, QA compliance certification, and blockchain state status.
-          </p>
+    <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '2.5rem 2rem 4rem' }}>
+      {/* ─── Breadcrumb & Header ────────────────────────────────────────── */}
+      <div style={{ marginBottom: '2.25rem' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          fontSize: '0.8rem',
+          fontWeight: 600,
+          color: '#64748b',
+          marginBottom: '0.75rem',
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em'
+        }}>
+          <span>SecureChain</span>
+          <span>/</span>
+          <span>Enterprise Workspace</span>
+          <span>/</span>
+          <span style={{ color: '#0f172a' }}>Batch Registry</span>
         </div>
 
-        {isManufacturer && (
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => setShowProductModal(true)}
-              className="btn btn-secondary"
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              <Package size={17} /> Add Drug Product
-            </button>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="btn btn-primary"
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              <Plus size={18} /> Register New Batch
-            </button>
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1.25rem'
+        }}>
+          <div>
+            <h1 style={{
+              fontSize: 'clamp(1.75rem, 3vw, 2.25rem)',
+              fontWeight: 800,
+              letterSpacing: '-0.03em',
+              color: '#0f172a',
+              lineHeight: 1.2,
+              marginBottom: '0.4rem'
+            }}>
+              Pharmaceutical Batch Registry
+            </h1>
+            <p style={{ color: '#64748b', fontSize: '0.95rem', maxWidth: '720px' }}>
+              Anchored GS1 DataMatrix batches, QA compliance certification, and Hyperledger Fabric cryptographic state.
+            </p>
           </div>
-        )}
+
+          {isManufacturer && (
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setShowProductModal(true)}
+                className="light-btn-secondary"
+              >
+                <Package size={17} color="#475569" />
+                <span>Add Drug Product</span>
+              </button>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="light-btn-emerald"
+              >
+                <Plus size={18} />
+                <span>Register New Batch</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid-4" style={{ marginBottom: '2rem' }}>
-        <div className="glass-card">
-          <div className="form-label">Total Batches</div>
-          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#fff' }}>{batches.length}</div>
+      {/* ─── Stats KPI Row (Light Surface Cards) ─────────────────────────── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        gap: '1.25rem',
+        marginBottom: '2rem'
+      }}>
+        {/* Total Batches */}
+        <div className="light-stat-card">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Total Batches
+            </span>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Layers size={17} color="#0f172a" />
+            </div>
+          </div>
+          <div style={{ fontSize: '2.25rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.1, marginBottom: '0.35rem' }}>
+            {batches.length}
+          </div>
+          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+            Cryptographically anchored to Fabric
+          </div>
         </div>
-        <div className="glass-card">
-          <div className="form-label">Approved & Salable</div>
-          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#34d399' }}>
+
+        {/* Approved & Salable */}
+        <div className="light-stat-card">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#047857', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Approved & Salable
+            </span>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CheckCircle2 size={17} color="#059669" />
+            </div>
+          </div>
+          <div style={{ fontSize: '2.25rem', fontWeight: 800, color: '#059669', lineHeight: 1.1, marginBottom: '0.35rem' }}>
             {batches.filter(b => b.status === 'APPROVED' || b.status === 'DELIVERED').length}
           </div>
-        </div>
-        <div className="glass-card">
-          <div className="form-label">In Custody Transit</div>
-          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#38bdf8' }}>
-            {batches.filter(b => b.status === 'IN_TRANSIT').length}
+          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+            QA certified & available for dispatch
           </div>
         </div>
-        <div className="glass-card">
-          <div className="form-label">Recalled</div>
-          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#fb7185' }}>
+
+        {/* In Custody Transit */}
+        <div className="light-stat-card">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              In Custody Transit
+            </span>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Truck size={17} color="#0284c7" />
+            </div>
+          </div>
+          <div style={{ fontSize: '2.25rem', fontWeight: 800, color: '#0284c7', lineHeight: 1.1, marginBottom: '0.35rem' }}>
+            {batches.filter(b => b.status === 'IN_TRANSIT').length}
+          </div>
+          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+            Active logistics & 3PL waybills
+          </div>
+        </div>
+
+        {/* Recalled */}
+        <div className="light-stat-card">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#be123c', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Recalled / Quarantine
+            </span>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fff1f2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AlertTriangle size={17} color="#e11d48" />
+            </div>
+          </div>
+          <div style={{ fontSize: '2.25rem', fontWeight: 800, color: '#e11d48', lineHeight: 1.1, marginBottom: '0.35rem' }}>
             {batches.filter(b => b.status === 'RECALLED').length}
+          </div>
+          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+            Emergency compliance quarantine
           </div>
         </div>
       </div>
 
-      {/* Batches Table */}
-      <div className="glass-card">
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-            Loading blockchain records...
+      {/* ─── Batches Table Container ─────────────────────────────────────── */}
+      <div className="light-table-container">
+        {/* Table Controls Header Bar */}
+        <div style={{
+          padding: '1.25rem 1.5rem',
+          borderBottom: '1px solid #e2e8f0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          background: '#ffffff'
+        }}>
+          {/* Search input */}
+          <div style={{ position: 'relative', maxWidth: '340px', width: '100%' }}>
+            <input
+              type="text"
+              placeholder="Filter by batch number, brand or generic..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="light-input"
+              style={{ paddingLeft: '2.35rem' }}
+            />
+            <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
           </div>
-        ) : batches.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-            <Layers size={40} style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
-            <p>No pharmaceutical batches registered yet.</p>
+
+          {/* Status Filter Tabs & Count */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: '#f1f5f9', padding: '0.25rem', borderRadius: '8px' }}>
+              {['ALL', 'APPROVED', 'IN_TRANSIT', 'PENDING_QA', 'RECALLED'].map(status => (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => setStatusFilter(status)}
+                  style={{
+                    background: statusFilter === status ? '#ffffff' : 'transparent',
+                    border: 'none',
+                    color: statusFilter === status ? '#0f172a' : '#64748b',
+                    fontWeight: statusFilter === status ? 700 : 500,
+                    fontSize: '0.78rem',
+                    padding: '0.35rem 0.65rem',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    boxShadow: statusFilter === status ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {status === 'ALL' ? 'All Batches' : status.replace('_', ' ')}
+                </button>
+              ))}
+            </div>
+
+            <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>
+              {filteredBatches.length} batch{filteredBatches.length === 1 ? '' : 'es'}
+            </span>
+          </div>
+        </div>
+
+        {/* Table Content */}
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '4rem 2rem', color: '#64748b' }}>
+            <div style={{ fontSize: '1.05rem', fontWeight: 600, color: '#0f172a', marginBottom: '0.35rem' }}>Loading blockchain ledger records...</div>
+            <div style={{ fontSize: '0.85rem' }}>Querying peer nodes and verifiable state anchors.</div>
+          </div>
+        ) : filteredBatches.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '4rem 2rem', color: '#64748b' }}>
+            <Layers size={40} style={{ margin: '0 auto 0.75rem', opacity: 0.4, color: '#0f172a' }} />
+            <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.35rem' }}>No batch records found</div>
+            <p style={{ fontSize: '0.85rem', maxWidth: '420px', margin: '0 auto 1.25rem' }}>
+              {searchQuery || statusFilter !== 'ALL' 
+                ? 'Try resetting the search filters or status tags to view all ledger entries.' 
+                : 'Click "Register New Batch" above to anchor your first pharmaceutical lot on the blockchain.'}
+            </p>
+            {isManufacturer && (
+              <button onClick={() => setShowCreateModal(true)} className="light-btn-primary">
+                <Plus size={16} /> Register First Batch
+              </button>
+            )}
           </div>
         ) : (
-          <div className="table-container">
-            <table>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="light-table">
               <thead>
                 <tr>
                   <th>Batch Number</th>
-                  <th>Product</th>
+                  <th>Drug Product</th>
                   <th>Quantity</th>
                   <th>Manufactured</th>
                   <th>Status</th>
@@ -247,67 +426,84 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                 </tr>
               </thead>
               <tbody>
-                {batches.map((batch) => (
+                {filteredBatches.map((batch) => (
                   <tr key={batch.id}>
                     <td>
-                      <span className="font-mono" style={{ fontWeight: 600, color: '#38bdf8' }}>
+                      <span style={{
+                        display: 'inline-block',
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        color: '#0284c7',
+                        background: '#f0f9ff',
+                        border: '1px solid #bae6fd',
+                        padding: '0.25rem 0.55rem',
+                        borderRadius: '6px'
+                      }}>
                         {batch.batchNumber}
                       </span>
                     </td>
                     <td>
-                      <div style={{ fontWeight: 600, color: '#fff' }}>
+                      <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.925rem' }}>
                         {batch.product?.brandName || 'Drug Product'}
                       </div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                      <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
                         {batch.product?.genericName} ({batch.product?.strength})
                       </div>
                     </td>
-                    <td>{batch.quantity?.toLocaleString()} units</td>
-                    <td style={{ fontSize: '0.825rem', color: 'var(--text-secondary)' }}>
-                      {new Date(batch.manufacturedAt).toLocaleDateString()}
+                    <td>
+                      <span style={{ fontWeight: 600, color: '#1e293b' }}>
+                        {batch.quantity?.toLocaleString()}
+                      </span>{' '}
+                      <span style={{ fontSize: '0.78rem', color: '#64748b' }}>units</span>
                     </td>
                     <td>
-                      <span className={`badge ${
-                        batch.status === 'APPROVED' || batch.status === 'DELIVERED'
-                          ? 'badge-authentic'
-                          : batch.status === 'RECALLED'
-                          ? 'badge-recalled'
-                          : batch.status === 'IN_TRANSIT'
-                          ? 'badge-transit'
-                          : 'badge-pending'
-                      }`}>
-                        {batch.status}
+                      <span style={{ fontSize: '0.85rem', color: '#475569' }}>
+                        {new Date(batch.manufacturedAt).toLocaleDateString()}
                       </span>
                     </td>
                     <td>
+                      {batch.status === 'APPROVED' || batch.status === 'DELIVERED' ? (
+                        <span className="light-badge-approved">
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#059669' }} />
+                          {batch.status}
+                        </span>
+                      ) : batch.status === 'RECALLED' ? (
+                        <span className="light-badge-recalled">
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#e11d48' }} />
+                          {batch.status}
+                        </span>
+                      ) : batch.status === 'IN_TRANSIT' ? (
+                        <span className="light-badge-transit">
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#0284c7' }} />
+                          {batch.status}
+                        </span>
+                      ) : (
+                        <span className="light-badge-pending">
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#d97706' }} />
+                          {batch.status}
+                        </span>
+                      )}
+                    </td>
+                    <td>
                       {batch.qaApprovedAt ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#34d399', fontSize: '0.8rem' }}>
-                          <CheckCircle2 size={14} /> Certified
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#059669', fontSize: '0.825rem', fontWeight: 600 }}>
+                          <CheckCircle2 size={15} color="#059669" /> Certified
                         </div>
                       ) : (
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Pending QA</span>
+                        <span style={{ color: '#d97706', fontSize: '0.8rem', fontWeight: 500, background: '#fffbeb', padding: '0.2rem 0.45rem', borderRadius: '4px', border: '1px solid #fde68a' }}>
+                          Pending QA
+                        </span>
                       )}
                     </td>
                     <td>
                       <button
                         onClick={() => handleInspectAi(batch.batchNumber)}
                         disabled={aiLoadingBatchId === batch.batchNumber}
-                        className="btn"
-                        style={{
-                          background: 'rgba(56, 189, 248, 0.1)',
-                          border: '1px solid rgba(56, 189, 248, 0.3)',
-                          color: '#38bdf8',
-                          padding: '0.25rem 0.65rem',
-                          fontSize: '0.75rem',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.35rem',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                        }}
+                        className="light-btn-ai"
                       >
-                        <Sparkles size={12} />
-                        {aiLoadingBatchId === batch.batchNumber ? 'Analyzing...' : 'AI Insights'}
+                        <Sparkles size={13} />
+                        <span>{aiLoadingBatchId === batch.batchNumber ? 'Analyzing...' : 'AI Insights'}</span>
                       </button>
                     </td>
                     <td style={{ textAlign: 'right' }}>
@@ -315,8 +511,8 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                         {isManufacturer && batch.status === 'PENDING_QA' && (
                           <button
                             onClick={() => handleApproveBatch(batch.id)}
-                            className="btn btn-primary"
-                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.775rem' }}
+                            className="light-btn-emerald"
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.78rem' }}
                           >
                             <ShieldCheck size={14} /> Approve QA
                           </button>
@@ -324,8 +520,8 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                         {isManufacturer && batch.status === 'APPROVED' && (
                           <button
                             onClick={() => setTransferBatch(batch)}
-                            className="btn btn-secondary"
-                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.775rem' }}
+                            className="light-btn-primary"
+                            style={{ padding: '0.4rem 0.85rem', fontSize: '0.78rem' }}
                           >
                             <Truck size={14} /> Dispatch Transfer
                           </button>
@@ -340,32 +536,37 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
         )}
       </div>
 
-      {/* Modal: Register New Batch */}
+      {/* ─── Modal: Register New Batch ───────────────────────────────────── */}
       {showCreateModal && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-          backdropFilter: 'blur(8px)', zIndex: 100,
+          position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.55)',
+          backdropFilter: 'blur(6px)', zIndex: 100,
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
         }}>
-          <div className="glass-card" style={{ maxWidth: '520px', width: '100%', padding: '2rem' }}>
+          <div className="light-card" style={{ maxWidth: '540px', width: '100%', padding: '2.25rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.35rem' }}>Register New Pharma Batch</h3>
-              <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
-                <X size={20} />
+              <div>
+                <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Register New Pharma Batch</h3>
+                <div style={{ fontSize: '0.825rem', color: '#64748b', marginTop: '0.2rem' }}>Generates GS1 DataMatrix and anchors cryptographic lot ID</div>
+              </div>
+              <button onClick={() => setShowCreateModal(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', cursor: 'pointer' }}>
+                <X size={17} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateBatch} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <form onSubmit={handleCreateBatch} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
               <div>
-                <label className="form-label">Product</label>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                  Drug Product
+                </label>
                 <select
-                  className="form-input"
+                  className="light-input"
                   value={newProductId}
                   onChange={(e) => setNewProductId(e.target.value)}
                   required
                 >
                   {products.map(p => (
-                    <option key={p.id} value={p.id} style={{ background: '#0d121f' }}>
+                    <option key={p.id} value={p.id}>
                       {p.brandName} — {p.genericName} ({p.strength})
                     </option>
                   ))}
@@ -373,10 +574,13 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
               </div>
 
               <div>
-                <label className="form-label">Batch Number / Lot ID</label>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                  Batch Number / Lot ID
+                </label>
                 <input
                   type="text"
-                  className="form-input font-mono"
+                  className="light-input"
+                  style={{ fontFamily: 'var(--font-mono)' }}
                   placeholder="e.g. BATCH-2026-X01"
                   value={newBatchNumber}
                   onChange={(e) => setNewBatchNumber(e.target.value)}
@@ -386,10 +590,12 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label className="form-label">Units Produced</label>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                    Units Produced
+                  </label>
                   <input
                     type="number"
-                    className="form-input"
+                    className="light-input"
                     value={newQuantity}
                     onChange={(e) => setNewQuantity(Number(e.target.value))}
                     min={1}
@@ -397,11 +603,13 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                   />
                 </div>
                 <div>
-                  <label className="form-label">Unit Price ($)</label>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                    Unit Price ($)
+                  </label>
                   <input
                     type="number"
                     step="0.01"
-                    className="form-input"
+                    className="light-input"
                     value={newUnitPrice}
                     onChange={(e) => setNewUnitPrice(Number(e.target.value))}
                     min={0}
@@ -411,20 +619,25 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
               </div>
 
               <div>
-                <label className="form-label">Expiration Date</label>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                  Expiration Date
+                </label>
                 <input
                   type="date"
-                  className="form-input"
+                  className="light-input"
                   value={newExpiresAt}
                   onChange={(e) => setNewExpiresAt(e.target.value)}
                 />
               </div>
 
               <div>
-                <label className="form-label">QA Certificate Hash (SHA-256)</label>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                  QA Certificate Hash (SHA-256)
+                </label>
                 <input
                   type="text"
-                  className="form-input font-mono"
+                  className="light-input"
+                  style={{ fontFamily: 'var(--font-mono)' }}
                   placeholder="Optional cert hash or off-chain digest"
                   value={newQaHash}
                   onChange={(e) => setNewQaHash(e.target.value)}
@@ -432,11 +645,11 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-                <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">
+                <button type="button" onClick={() => setShowCreateModal(false)} className="light-btn-secondary">
                   Cancel
                 </button>
-                <button type="submit" disabled={submitting} className="btn btn-primary">
-                  {submitting ? 'Registering...' : 'Anchor on Ledger'}
+                <button type="submit" disabled={submitting} className="light-btn-primary">
+                  {submitting ? 'Anchoring...' : 'Anchor on Ledger'}
                 </button>
               </div>
             </form>
@@ -444,39 +657,44 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
         </div>
       )}
 
-      {/* Modal: Dispatch Custody Transfer */}
+      {/* ─── Modal: Dispatch Custody Transfer ────────────────────────────── */}
       {transferBatch && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-          backdropFilter: 'blur(8px)', zIndex: 100,
+          position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.55)',
+          backdropFilter: 'blur(6px)', zIndex: 100,
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
         }}>
-          <div className="glass-card" style={{ maxWidth: '480px', width: '100%', padding: '2rem' }}>
+          <div className="light-card" style={{ maxWidth: '480px', width: '100%', padding: '2.25rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h3 style={{ fontSize: '1.25rem' }}>Dispatch Batch Custody</h3>
-              <button onClick={() => setTransferBatch(null)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
-                <X size={20} />
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Dispatch Batch Custody</h3>
+                <div style={{ fontSize: '0.825rem', color: '#64748b' }}>Transfer ownership on Hyperledger Fabric</div>
+              </div>
+              <button onClick={() => setTransferBatch(null)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', cursor: 'pointer' }}>
+                <X size={17} />
               </button>
             </div>
 
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
-              Initiating transfer reserves stock and creates an immutable custody record for batch <strong style={{ color: '#fff' }}>{transferBatch.batchNumber}</strong>.
+            <p style={{ color: '#475569', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
+              Initiating transfer reserves stock and creates an immutable custody record for batch <strong style={{ color: '#0f172a' }}>{transferBatch.batchNumber}</strong>.
             </p>
 
-            <form onSubmit={handleInitiateTransfer} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <form onSubmit={handleInitiateTransfer} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
               <div>
-                <label className="form-label">Recipient Organization</label>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                  Recipient Organization
+                </label>
                 <select
-                  className="form-input"
+                  className="light-input"
                   value={transferReceiverId}
                   onChange={(e) => setTransferReceiverId(e.target.value)}
                   required
                 >
-                  <option value="" style={{ background: '#0d121f' }}>Select recipient distributor or hospital</option>
+                  <option value="">Select recipient distributor or hospital</option>
                   {orgs
                     .filter(o => o.id !== user.organizationId)
                     .map(o => (
-                      <option key={o.id} value={o.id} style={{ background: '#0d121f' }}>
+                      <option key={o.id} value={o.id}>
                         {o.name} ({o.type})
                       </option>
                     ))}
@@ -484,10 +702,12 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
               </div>
 
               <div>
-                <label className="form-label">Transfer Quantity</label>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                  Transfer Quantity
+                </label>
                 <input
                   type="number"
-                  className="form-input"
+                  className="light-input"
                   value={transferQty}
                   onChange={(e) => setTransferQty(Number(e.target.value))}
                   min={1}
@@ -497,10 +717,12 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
               </div>
 
               <div>
-                <label className="form-label">Shipment Notes / Waybill</label>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                  Shipment Notes / Waybill
+                </label>
                 <input
                   type="text"
-                  className="form-input"
+                  className="light-input"
                   placeholder="e.g. Cold-chain seal #9021, dispatched via DHL Medical"
                   value={transferNotes}
                   onChange={(e) => setTransferNotes(e.target.value)}
@@ -508,10 +730,10 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-                <button type="button" onClick={() => setTransferBatch(null)} className="btn btn-secondary">
+                <button type="button" onClick={() => setTransferBatch(null)} className="light-btn-secondary">
                   Cancel
                 </button>
-                <button type="submit" disabled={submitting || !transferReceiverId} className="btn btn-primary">
+                <button type="submit" disabled={submitting || !transferReceiverId} className="light-btn-primary">
                   {submitting ? 'Dispatching...' : 'Confirm Dispatch'}
                 </button>
               </div>
@@ -520,55 +742,54 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
         </div>
       )}
 
-      {/* Modal: AI Provenance & Anomaly Surveillance */}
+      {/* ─── Modal: AI Provenance & Anomaly Surveillance ─────────────────── */}
       {selectedAiBatch && (
         <div style={{
           position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.75)',
-          backdropFilter: 'blur(8px)',
+          inset: 0,
+          background: 'rgba(15, 23, 42, 0.6)',
+          backdropFilter: 'blur(6px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           padding: '1.5rem',
           zIndex: 1000
         }}>
-          <div className="glass-card" style={{ maxWidth: '640px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className="light-card" style={{ maxWidth: '640px', width: '100%', maxHeight: '90vh', overflowY: 'auto', padding: '2.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                 <div style={{
-                  width: '36px',
-                  height: '36px',
+                  width: '38px',
+                  height: '38px',
                   borderRadius: '10px',
-                  background: 'rgba(56, 189, 248, 0.15)',
+                  background: '#f5f3ff',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#38bdf8'
+                  color: '#7c3aed'
                 }}>
                   <Sparkles size={20} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>AI Provenance Intelligence</h3>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    Batch: <span className="font-mono" style={{ color: '#fff' }}>{selectedAiBatch.batchNumber}</span>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                    AI Provenance Intelligence
+                  </h3>
+                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    Batch: <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#0f172a' }}>{selectedAiBatch.batchNumber}</span>
                   </div>
                 </div>
               </div>
-              <button onClick={() => setSelectedAiBatch(null)} className="btn" style={{ padding: '0.35rem', color: 'var(--text-muted)' }}>
-                <X size={20} />
+              <button onClick={() => setSelectedAiBatch(null)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', cursor: 'pointer' }}>
+                <X size={17} />
               </button>
             </div>
 
             {/* Score & Risk Level */}
             <div style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-subtle)',
-              padding: '1.25rem',
+              background: '#f8fafc',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0',
+              padding: '1.25rem 1.5rem',
               marginBottom: '1.25rem',
               display: 'flex',
               alignItems: 'center',
@@ -577,20 +798,25 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
               gap: '1rem',
             }}>
               <div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Provenance Integrity Score</div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
+                  Provenance Integrity Score
+                </div>
                 <div style={{
-                  fontSize: '2.25rem',
+                  fontSize: '2.5rem',
                   fontWeight: 800,
                   fontFamily: 'var(--font-mono)',
-                  color: selectedAiBatch.provenanceScore >= 85 ? '#34d399' : selectedAiBatch.provenanceScore >= 70 ? '#fbbf24' : '#fb7185',
+                  color: selectedAiBatch.provenanceScore >= 85 ? '#059669' : selectedAiBatch.provenanceScore >= 70 ? '#d97706' : '#e11d48',
+                  lineHeight: 1.1
                 }}>
-                  {selectedAiBatch.provenanceScore}<span style={{ fontSize: '1.1rem', color: 'var(--text-muted)' }}>/100</span>
+                  {selectedAiBatch.provenanceScore}<span style={{ fontSize: '1.2rem', color: '#94a3b8' }}>/100</span>
                 </div>
               </div>
 
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Assessed Risk Profile</div>
-                <span className={`badge ${selectedAiBatch.riskLevel === 'LOW' ? 'badge-authentic' : selectedAiBatch.riskLevel === 'MODERATE' ? 'badge-pending' : 'badge-recalled'}`} style={{ marginTop: '0.35rem', fontSize: '0.85rem' }}>
+                <div style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
+                  Risk Profile
+                </div>
+                <span className={selectedAiBatch.riskLevel === 'LOW' ? 'light-badge-approved' : selectedAiBatch.riskLevel === 'MODERATE' ? 'light-badge-pending' : 'light-badge-recalled'} style={{ marginTop: '0.35rem', fontSize: '0.85rem' }}>
                   {selectedAiBatch.ratingLabel}
                 </span>
               </div>
@@ -599,16 +825,16 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
             {/* Anomalies List */}
             {selectedAiBatch.anomalies && selectedAiBatch.anomalies.length > 0 ? (
               <div style={{ marginBottom: '1.25rem' }}>
-                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#fb7185', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#be123c', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <AlertTriangle size={16} /> Flagged Anomaly Signals ({selectedAiBatch.anomalies.length})
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {selectedAiBatch.anomalies.map((anom, idx) => (
-                    <div key={idx} style={{ background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.3)', borderRadius: 'var(--radius-md)', padding: '0.75rem 1rem' }}>
-                      <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#fda4af' }}>
+                    <div key={idx} style={{ background: '#fff1f2', border: '1px solid #fecdd3', borderRadius: '8px', padding: '0.75rem 1rem' }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#9f1239' }}>
                         [{anom.severity}] {anom.type.replace(/_/g, ' ')}
                       </div>
-                      <div style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                      <div style={{ fontSize: '0.825rem', color: '#475569', marginTop: '0.2rem' }}>
                         {anom.message}
                       </div>
                     </div>
@@ -618,16 +844,16 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
             ) : (
               <div style={{
                 marginBottom: '1.25rem',
-                background: 'rgba(16, 185, 129, 0.08)',
-                border: '1px solid rgba(16, 185, 129, 0.25)',
-                borderRadius: 'var(--radius-md)',
+                background: '#ecfdf5',
+                border: '1px solid #a7f3d0',
+                borderRadius: '8px',
                 padding: '0.85rem 1rem',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.75rem'
               }}>
-                <CheckCircle2 size={20} color="#34d399" />
-                <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>
+                <CheckCircle2 size={20} color="#059669" />
+                <div style={{ fontSize: '0.875rem', color: '#065f46' }}>
                   <strong>Zero Anomalies Detected.</strong> Cryptographic custody flow matches authentic baseline distribution.
                 </div>
               </div>
@@ -636,16 +862,16 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
             {/* Audit Summary & Recommendation */}
             {selectedAiBatch.auditSummary && (
               <div style={{
-                background: 'rgba(255, 255, 255, 0.02)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-md)',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
                 padding: '1rem',
                 marginBottom: '1.25rem'
               }}>
-                <div style={{ fontSize: '0.78rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '0.35rem' }}>
                   AI Recommendation
                 </div>
-                <div style={{ fontSize: '0.925rem', color: '#e2e8f0', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '0.9rem', color: '#1e293b', lineHeight: 1.5 }}>
                   "{selectedAiBatch.auditSummary.recommendation}"
                 </div>
               </div>
@@ -655,12 +881,12 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
             {selectedAiBatch.scoreBreakdown && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.25rem' }}>
                 {selectedAiBatch.scoreBreakdown.bonuses?.map((b, i) => (
-                  <span key={i} style={{ fontSize: '0.725rem', background: 'rgba(16, 185, 129, 0.1)', color: '#a7f3d0', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                  <span key={i} style={{ fontSize: '0.75rem', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 600 }}>
                     ✓ {b}
                   </span>
                 ))}
                 {selectedAiBatch.scoreBreakdown.deductions?.map((d, i) => (
-                  <span key={i} style={{ fontSize: '0.725rem', background: 'rgba(244, 63, 94, 0.1)', color: '#fda4af', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                  <span key={i} style={{ fontSize: '0.75rem', background: '#fff1f2', color: '#be123c', border: '1px solid #fecdd3', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 600 }}>
                     ⚠ {d}
                   </span>
                 ))}
@@ -668,7 +894,7 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
             )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-              <button onClick={() => setSelectedAiBatch(null)} className="btn btn-secondary">
+              <button onClick={() => setSelectedAiBatch(null)} className="light-btn-secondary">
                 Close Insights
               </button>
             </div>
@@ -676,30 +902,34 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
         </div>
       )}
 
-      {/* Modal: Register Drug Product */}
+      {/* ─── Modal: Register Drug Product ────────────────────────────────── */}
       {showProductModal && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-          backdropFilter: 'blur(8px)', zIndex: 100,
+          position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.55)',
+          backdropFilter: 'blur(6px)', zIndex: 100,
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
         }}>
-          <div className="glass-card" style={{ maxWidth: '520px', width: '100%', padding: '2rem' }}>
+          <div className="light-card" style={{ maxWidth: '520px', width: '100%', padding: '2.25rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Package size={22} color="#38bdf8" />
-                <h3 style={{ fontSize: '1.35rem', margin: 0 }}>Register Drug Formulation</h3>
+                <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: '#f0f9ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Package size={19} color="#0284c7" />
+                </div>
+                <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Register Drug Formulation</h3>
               </div>
-              <button onClick={() => setShowProductModal(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
-                <X size={20} />
+              <button onClick={() => setShowProductModal(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', cursor: 'pointer' }}>
+                <X size={17} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateProduct} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <form onSubmit={handleCreateProduct} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
               <div>
-                <label className="form-label">Commercial Brand Name</label>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                  Commercial Brand Name
+                </label>
                 <input
                   type="text"
-                  className="form-input"
+                  className="light-input"
                   placeholder="e.g. Lipitor-XR, CiproMax, Amox-500"
                   value={prodBrandName}
                   onChange={(e) => setProdBrandName(e.target.value)}
@@ -708,10 +938,12 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
               </div>
 
               <div>
-                <label className="form-label">Generic Active Molecule</label>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                  Generic Active Molecule
+                </label>
                 <input
                   type="text"
-                  className="form-input"
+                  className="light-input"
                   placeholder="e.g. Atorvastatin Calcium, Ciprofloxacin"
                   value={prodGenericName}
                   onChange={(e) => setProdGenericName(e.target.value)}
@@ -721,26 +953,30 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label className="form-label">Formulation Type</label>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                    Formulation Type
+                  </label>
                   <select
-                    className="form-input"
+                    className="light-input"
                     value={prodFormulation}
                     onChange={(e) => setProdFormulation(e.target.value)}
                   >
-                    <option value="Tablet" style={{ background: '#0d121f' }}>Tablet</option>
-                    <option value="Capsule" style={{ background: '#0d121f' }}>Capsule</option>
-                    <option value="Liquid" style={{ background: '#0d121f' }}>Liquid / Syrup</option>
-                    <option value="Injection" style={{ background: '#0d121f' }}>Injection (IV/IM)</option>
-                    <option value="Inhaler" style={{ background: '#0d121f' }}>Inhaler</option>
-                    <option value="Topical" style={{ background: '#0d121f' }}>Topical Cream</option>
+                    <option value="Tablet">Tablet</option>
+                    <option value="Capsule">Capsule</option>
+                    <option value="Liquid">Liquid / Syrup</option>
+                    <option value="Injection">Injection (IV/IM)</option>
+                    <option value="Inhaler">Inhaler</option>
+                    <option value="Topical">Topical Cream</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="form-label">Dosage Strength</label>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                    Dosage Strength
+                  </label>
                   <input
                     type="text"
-                    className="form-input"
+                    className="light-input"
                     placeholder="e.g. 500mg, 10mg/5ml"
                     value={prodStrength}
                     onChange={(e) => setProdStrength(e.target.value)}
@@ -755,18 +991,18 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                   id="scheduledDrug"
                   checked={prodScheduled}
                   onChange={(e) => setProdScheduled(e.target.checked)}
-                  style={{ accentColor: '#38bdf8', width: '16px', height: '16px' }}
+                  style={{ accentColor: '#0f172a', width: '16px', height: '16px' }}
                 />
-                <label htmlFor="scheduledDrug" style={{ fontSize: '0.85rem', color: '#cbd5e1', cursor: 'pointer' }}>
+                <label htmlFor="scheduledDrug" style={{ fontSize: '0.85rem', color: '#475569', cursor: 'pointer' }}>
                   Controlled / Scheduled Formulation (Requires heightened custody tracking)
                 </label>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.25rem' }}>
-                <button type="button" onClick={() => setShowProductModal(false)} className="btn btn-secondary">
+                <button type="button" onClick={() => setShowProductModal(false)} className="light-btn-secondary">
                   Cancel
                 </button>
-                <button type="submit" disabled={submittingProduct} className="btn btn-primary">
+                <button type="submit" disabled={submittingProduct} className="light-btn-primary">
                   {submittingProduct ? 'Registering...' : 'Register Formulation'}
                 </button>
               </div>
