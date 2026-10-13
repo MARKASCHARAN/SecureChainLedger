@@ -1,8 +1,7 @@
 // client/src/components/Navbar.tsx
 import React, { useState } from 'react';
 import { 
-  LogOut, Layers, Truck, AlertTriangle, 
-  PackageCheck, Search, Menu, X, Database, QrCode
+  LogOut, Search, Menu, X 
 } from 'lucide-react';
 import type { User } from '../types';
 
@@ -27,28 +26,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [industriesOpen, setIndustriesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Authenticated operational workspace items
-  const authenticatedItems = [
-    { id: 'batches', label: 'Batches & Catalog', icon: Layers, roles: ['MANUFACTURER', 'REGULATOR', 'ADMIN'] },
-    { id: 'transfers', label: 'Custody Transfers', icon: Truck, roles: ['MANUFACTURER', 'DISTRIBUTOR', 'HOSPITAL', 'PHARMACY', 'REGULATOR', 'ADMIN'] },
-    { id: 'inventory', label: 'Inventory', icon: PackageCheck, roles: ['MANUFACTURER', 'DISTRIBUTOR', 'HOSPITAL', 'PHARMACY', 'REGULATOR', 'ADMIN'] },
-    { id: 'recalls', label: 'Safety & Recalls', icon: AlertTriangle, roles: ['MANUFACTURER', 'DISTRIBUTOR', 'HOSPITAL', 'PHARMACY', 'REGULATOR', 'ADMIN'] },
-    { id: 'ledger', label: 'Ledger Telemetry', icon: Database, roles: ['MANUFACTURER', 'DISTRIBUTOR', 'HOSPITAL', 'PHARMACY', 'REGULATOR', 'ADMIN'] },
-    { id: 'verify', label: 'GS1 Verification', icon: QrCode, roles: ['MANUFACTURER', 'DISTRIBUTOR', 'HOSPITAL', 'PHARMACY', 'REGULATOR', 'ADMIN'] },
-  ];
-
-  const visibleAuthItems = user ? authenticatedItems.filter(item => item.roles.includes(user.role)) : [];
-
   // =========================================================================
-  // AUTHENTICATED CONSOLE NAVBAR (When User Is Logged In)
+  // AUTHENTICATED CONSOLE HEADER (When User Is Logged In)
+  // Clean minimal header: Logo at top left, Role badge + Logout at top right.
+  // All navigation options are housed in the AppSidebar.
   // =========================================================================
   if (user) {
-    const roleLabel = user.role === 'MANUFACTURER' 
-      ? 'Manufacturer Console' 
-      : user.role === 'REGULATOR' 
-      ? 'Regulator Oversight Hub' 
-      : `${user.role} Workspace`;
-
     return (
       <header style={{
         position: 'sticky',
@@ -59,133 +42,40 @@ export const Navbar: React.FC<NavbarProps> = ({
         boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)'
       }}>
         <div style={{
-          maxWidth: '1440px',
-          margin: '0 auto',
+          width: '100%',
           padding: '0 1.75rem',
-          height: '66px',
+          height: '65px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-          {/* Left: Brand + Console Identifier */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
-            <div 
-              onClick={() => setActiveTab(user.role === 'MANUFACTURER' ? 'batches' : 'inventory')}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }}
-            >
-              <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
-                <circle cx="16" cy="16" r="14" stroke="#0f172a" strokeWidth="2.5" />
-                <circle cx="16" cy="16" r="7" stroke="#0f172a" strokeWidth="2" strokeDasharray="3 3" />
-                <circle cx="16" cy="16" r="3" fill="#0f172a" />
-                <line x1="16" y1="2" x2="16" y2="8" stroke="#0f172a" strokeWidth="2" />
-                <line x1="16" y1="24" x2="16" y2="30" stroke="#0f172a" strokeWidth="2" />
-                <line x1="2" y1="16" x2="8" y2="16" stroke="#0f172a" strokeWidth="2" />
-                <line x1="24" y1="16" x2="30" y2="16" stroke="#0f172a" strokeWidth="2" />
-              </svg>
-              <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.03em', color: '#0f172a' }}>
-                SecureChain
-              </span>
-            </div>
-
-            <div style={{ width: '1px', height: '18px', background: '#e2e8f0' }} />
-
-            <span style={{
-              background: '#f1f5f9',
-              color: '#475569',
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              padding: '0.2rem 0.6rem',
-              borderRadius: '6px',
-              letterSpacing: '0.02em'
-            }}>
-              {roleLabel}
+          {/* Left: Brand Logo */}
+          <div 
+            onClick={() => setActiveTab(user.role === 'MANUFACTURER' ? 'batches' : 'inventory')}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }}
+          >
+            <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="14" stroke="#0f172a" strokeWidth="2.5" />
+              <circle cx="16" cy="16" r="7" stroke="#0f172a" strokeWidth="2" strokeDasharray="3 3" />
+              <circle cx="16" cy="16" r="3" fill="#0f172a" />
+              <line x1="16" y1="2" x2="16" y2="8" stroke="#0f172a" strokeWidth="2" />
+              <line x1="16" y1="24" x2="16" y2="30" stroke="#0f172a" strokeWidth="2" />
+              <line x1="2" y1="16" x2="8" y2="16" stroke="#0f172a" strokeWidth="2" />
+              <line x1="24" y1="16" x2="30" y2="16" stroke="#0f172a" strokeWidth="2" />
+            </svg>
+            <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.03em', color: '#0f172a' }}>
+              SecureChain
             </span>
           </div>
 
-          {/* Center: Operational Tabs */}
-          <nav style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }} className="desktop-nav">
-            {visibleAuthItems.map(item => {
-              const isActive = activeTab === item.id;
-              const IconComp = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: isActive ? '#0f172a' : '#64748b',
-                    fontWeight: isActive ? 700 : 500,
-                    fontSize: '0.875rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.45rem',
-                    padding: '0.65rem 0.2rem',
-                    borderBottom: isActive ? '2px solid #0f172a' : '2px solid transparent',
-                    transition: 'all 0.15s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) e.currentTarget.style.color = '#0f172a';
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) e.currentTarget.style.color = '#64748b';
-                  }}
-                >
-                  <IconComp size={15} color={isActive ? '#0f172a' : '#94a3b8'} />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* Right: Telemetry Health, Org Pill, User & Logout */}
+          {/* Right: Role indicator & Logout button */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
-            {/* Quick Search */}
-            <button
-              onClick={() => { setActiveTab('verify'); if (onOpenSearch) onOpenSearch(); }}
-              style={{
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                borderRadius: '6px',
-                padding: '0.4rem 0.75rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                fontSize: '0.8rem',
-                color: '#64748b',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-              title="Quick Search Batches & Ledgers"
-            >
-              <Search size={14} color="#64748b" />
-              <span className="search-hint">Search GS1 / Batch</span>
-            </button>
-
-            {/* Node Status Pill */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              background: '#f0fdf4',
-              border: '1px solid #bbf7d0',
-              borderRadius: '6px',
-              padding: '0.35rem 0.65rem',
-              fontSize: '0.78rem',
-              fontWeight: 600,
-              color: '#15803d'
-            }} className="desktop-nav">
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
-              <span>Peer 0 • Synced</span>
-            </div>
-
             {/* Role Badge */}
             <span style={{
-              background: '#f8fafc',
+              background: '#f1f5f9',
               border: '1px solid #cbd5e1',
               color: '#0f172a',
-              padding: '0.35rem 0.75rem',
+              padding: '0.35rem 0.85rem',
               borderRadius: '6px',
               fontSize: '0.78rem',
               fontWeight: 700,
@@ -202,7 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 border: '1px solid #cbd5e1',
                 color: '#334155',
                 borderRadius: '6px',
-                padding: '0.38rem 0.8rem',
+                padding: '0.38rem 0.85rem',
                 fontSize: '0.82rem',
                 fontWeight: 600,
                 cursor: 'pointer',

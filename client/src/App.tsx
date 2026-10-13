@@ -1,6 +1,7 @@
 // client/src/App.tsx
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
+import { AppSidebar } from './components/AppSidebar';
 import { AuthModal } from './components/AuthModal';
 import { HeroHomePage } from './pages/HeroHomePage';
 import { PublicVerificationPage } from './pages/PublicVerificationPage';
@@ -81,99 +82,80 @@ export const App: React.FC = () => {
         }}
       />
 
-      <main style={{ flex: 1, background: isWorkspaceView ? '#f8fafc' : undefined }}>
-        {activeTab === 'home' && (
-          <HeroHomePage
-            onNavigateToVerify={(batch) => {
-              if (batch) setVerifyBatchNumber(batch);
-              setActiveTab('verify');
+      {user ? (
+        <div style={{ display: 'flex', flex: 1, minHeight: 'calc(100vh - 65px)' }}>
+          <AppSidebar
+            user={user}
+            activeTab={activeTab}
+            setActiveTab={(tab) => {
+              if (tab !== 'verify') setVerifyBatchNumber('');
+              setActiveTab(tab);
             }}
-            onNavigateToLedger={() => setActiveTab('ledger')}
-            onOpenAuth={handleOpenAuth}
+            onLogout={handleLogout}
           />
-        )}
-        {activeTab === 'verify' && <PublicVerificationPage initialBatchNumber={verifyBatchNumber} />}
-        {activeTab === 'ledger' && <LedgerExplorerPage />}
-        
-        {activeTab === 'batches' && (
-          user ? (
-            <BatchesPage user={user} onNavigateToTransfers={() => setActiveTab('transfers')} />
-          ) : (
-            <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Authentication required to access the batch registry.</p>
-              <button onClick={() => setAuthModalOpen(true)} className="btn btn-primary">Sign In</button>
-            </div>
-          )
-        )}
 
-        {activeTab === 'transfers' && (
-          user ? (
-            <TransfersPage user={user} />
-          ) : (
-            <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Authentication required to manage transfers.</p>
-              <button onClick={() => setAuthModalOpen(true)} className="btn btn-primary">Sign In</button>
-            </div>
-          )
-        )}
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+            <main style={{ flex: 1, overflowY: 'auto', background: '#f8fafc' }}>
+              {activeTab === 'batches' && (
+                <BatchesPage user={user} onNavigateToTransfers={() => setActiveTab('transfers')} />
+              )}
+              {activeTab === 'transfers' && <TransfersPage user={user} />}
+              {activeTab === 'inventory' && <InventoryPage user={user} />}
+              {activeTab === 'recalls' && <RecallsPage user={user} />}
+              {activeTab === 'ledger' && <LedgerExplorerPage />}
+              {activeTab === 'verify' && <PublicVerificationPage initialBatchNumber={verifyBatchNumber} />}
+            </main>
 
-        {activeTab === 'inventory' && (
-          user ? (
-            <InventoryPage user={user} />
-          ) : (
-            <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Authentication required to inspect inventory balances.</p>
-              <button onClick={() => setAuthModalOpen(true)} className="btn btn-primary">Sign In</button>
-            </div>
-          )
-        )}
+            {/* Authenticated Workspace Footer */}
+            <footer style={{
+              borderTop: '1px solid #e2e8f0',
+              background: '#ffffff',
+              padding: '1.25rem 2rem',
+              marginTop: 'auto',
+            }}>
+              <div style={{
+                maxWidth: '1440px',
+                margin: '0 auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '1rem',
+                fontSize: '0.825rem',
+                color: '#64748b'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontWeight: 700, color: '#0f172a' }}>SecureChainLedger</span>
+                  <span>— Dual-layer Cryptographic Pharmaceutical Supply Chain Architecture</span>
+                </div>
 
-        {activeTab === 'recalls' && (
-          user ? (
-            <RecallsPage user={user} />
-          ) : (
-            <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Authentication required to manage emergency safety recalls.</p>
-              <button onClick={() => setAuthModalOpen(true)} className="btn btn-primary">Sign In</button>
-            </div>
-          )
-        )}
-      </main>
-
-      {/* Footer: Dedicated clean light footer for authenticated workspace */}
-      {isWorkspaceView && (
-        <footer style={{
-          borderTop: '1px solid #e2e8f0',
-          background: '#ffffff',
-          padding: '1.25rem 2rem',
-          marginTop: 'auto',
-        }}>
-          <div style={{
-            maxWidth: '1440px',
-            margin: '0 auto',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            fontSize: '0.825rem',
-            color: '#64748b'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontWeight: 700, color: '#0f172a' }}>SecureChainLedger</span>
-              <span>— Dual-layer Cryptographic Pharmaceutical Supply Chain Architecture</span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#0284c7', fontWeight: 600 }}>
-                <Cpu size={14} color="#0284c7" /> Hyperledger Fabric 2.5
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#059669', fontWeight: 600 }}>
-                <Database size={14} color="#059669" /> PostgreSQL
-              </span>
-            </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#0284c7', fontWeight: 600 }}>
+                    <Cpu size={14} color="#0284c7" /> Hyperledger Fabric 2.5
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#059669', fontWeight: 600 }}>
+                    <Database size={14} color="#059669" /> PostgreSQL
+                  </span>
+                </div>
+              </div>
+            </footer>
           </div>
-        </footer>
+        </div>
+      ) : (
+        <main style={{ flex: 1 }}>
+          {activeTab === 'home' && (
+            <HeroHomePage
+              onNavigateToVerify={(batch) => {
+                if (batch) setVerifyBatchNumber(batch);
+                setActiveTab('verify');
+              }}
+              onNavigateToLedger={() => setActiveTab('ledger')}
+              onOpenAuth={handleOpenAuth}
+            />
+          )}
+          {activeTab === 'verify' && <PublicVerificationPage initialBatchNumber={verifyBatchNumber} />}
+          {activeTab === 'ledger' && <LedgerExplorerPage />}
+        </main>
       )}
 
       <AuthModal
