@@ -13,9 +13,8 @@ This folder contains the **SecureChainLedger** AI/ML services for anomaly detect
 
 ## Stack
 
-- Python 3.11+ / Node.js service bridge
-- scikit-learn, PyTorch (anomaly models)
-- FastAPI (REST interface to backend)
+- **Node.js + Express** (**JavaScript**) — AI service REST interface
+- TensorFlow.js / ONNX Runtime (anomaly models)
 - PostgreSQL + Redis (feature store)
 
 ## Folder Structure
@@ -31,6 +30,6 @@ src/
 ## Getting Started
 
 ```bash
-pip install -r requirements.txt
-uvicorn services.main:app --reload
+npm install
+npm run dev
 ```

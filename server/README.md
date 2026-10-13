@@ -1,11 +1,10 @@
-# Server — Express + TypeScript
+# Server — Express + JavaScript
 
 This folder contains the **SecureChainLedger** backend API server.
 
 ## Stack
 
-- Node.js + Express
-- TypeScript
+- Node.js + Express (**JavaScript**)
 - PostgreSQL (Operational Read Models)
 - Redis (Cache / Fast Reads)
 - RabbitMQ (Async Events)

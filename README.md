@@ -14,12 +14,12 @@
 
 ### TECHNICAL ARCHITECTURE STACK
 
-| ARCHITECTURAL LAYER | CORE TECHNOLOGIES |
-| :--- | :--- |
-| **User Interface** | <img src="https://skillicons.dev/icons?i=react,ts,tailwind,redux,vite&theme=light" height="35" /> |
-| **Application Logic** | <img src="https://skillicons.dev/icons?i=nodejs,express,ts,npm&theme=light" height="35" /> |
-| **Distributed Ledger** | <img src="https://skillicons.dev/icons?i=hyperledger,docker,linux&theme=light" height="35" /> |
-| **Systems & Storage** | <img src="https://skillicons.dev/icons?i=postgres,redis,rabbitmq,prometheus,grafana&theme=light" height="35" /> |
+| ARCHITECTURAL LAYER | LANGUAGE | CORE TECHNOLOGIES |
+| :--- | :---: | :--- |
+| **User Interface** | TypeScript | <img src="https://skillicons.dev/icons?i=react,ts,tailwind,redux,vite&theme=light" height="35" /> |
+| **Application Logic** | JavaScript | <img src="https://skillicons.dev/icons?i=nodejs,express,npm&theme=light" height="35" /> |
+| **Distributed Ledger** | JavaScript | <img src="https://skillicons.dev/icons?i=hyperledger,docker,linux&theme=light" height="35" /> |
+| **Systems & Storage** | — | <img src="https://skillicons.dev/icons?i=postgres,redis,rabbitmq,prometheus,grafana&theme=light" height="35" /> |
 
 ---
 

@@ -1,11 +1,11 @@
-# Contracts — Hyperledger Fabric Chaincode
+# Blockchain — Hyperledger Fabric Chaincode
 
 This folder contains the **SecureChainLedger** smart contracts (chaincode) and network configuration.
 
 ## Stack
 
 - Hyperledger Fabric 2.x
-- Go / TypeScript Chaincode
+- **JavaScript** Chaincode (Fabric Contract API — `fabric-contract-api`)
 - Docker + Docker Compose
 - Fabric network config (crypto-config, channel artifacts)
 
@@ -14,10 +14,10 @@ This folder contains the **SecureChainLedger** smart contracts (chaincode) and n
 ```
 chaincode/
 ├── src/          # Chaincode source (batch, transfer, recall, audit)
-│   ├── batch.ts          # Batch genesis & QA certification logic
-│   ├── transfer.ts       # Custody transfer protocol
-│   ├── recall.ts         # Recall orchestration
-│   └── audit.ts          # Audit trail & compliance logging
+│   ├── batch.js          # Batch genesis & QA certification logic
+│   ├── transfer.js       # Custody transfer protocol
+│   ├── recall.js         # Recall orchestration
+│   └── audit.js          # Audit trail & compliance logging
 network/
 │   ├── configtx.yaml     # Channel & orderer configuration
 │   ├── crypto-config.yaml# Organization & peer MSP config

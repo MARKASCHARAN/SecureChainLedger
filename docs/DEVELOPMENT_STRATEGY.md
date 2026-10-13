@@ -61,8 +61,8 @@ For SecureChainLedger, this means proving the most important cross-component wor
 
 ## Phase 1 — Establish the Foundation
 
-- Set up the `client` shell (React + TypeScript + Vite, routing, auth guards, design system)
-- Set up the `server` core (Express + TypeScript, config, validation, logging, error handling)
+- Set up the `client` shell (React + **TypeScript** + Vite, routing, auth guards, design system)
+- Set up the `server` core (Express + **JavaScript**, config, validation, logging, error handling)
 - Set up **PostgreSQL schema and migrations**
 - Add a minimal **Docker-based local development setup**
 - Set up basic **automated checks** (lint, type-check, unit tests)
@@ -163,14 +163,14 @@ Start AI **only after** the data and permission model are reliable.
 
 ## Component Development Approach
 
-| Component | How to develop it |
-|:---|:---|
-| **Client** | Build the application shell and screens incrementally alongside real workflows |
-| **Server** | Establish the core architecture early; expand APIs feature by feature |
-| **Blockchain** | Prove the integration early; implement transaction rules as workflows require |
-| **AI** | Start later, after the data and permission model are reliable |
-| **Infrastructure** | Establish local dev environment early; harden deployment progressively |
-| **Documentation** | Start with architecture and setup; update alongside each feature |
+| Component | Language | How to develop it |
+|:---|:---:|:---|
+| **Client** | TypeScript | Build the application shell and screens incrementally alongside real workflows |
+| **Server** | JavaScript | Establish the core architecture early; expand APIs feature by feature |
+| **Blockchain** | JavaScript | Prove the integration early; implement transaction rules as workflows require |
+| **AI** | JavaScript | Start later, after the data and permission model are reliable |
+| **Infrastructure** | — | Establish local dev environment early; harden deployment progressively |
+| **Documentation** | — | Start with architecture and setup; update alongside each feature |
 
 ---
 
