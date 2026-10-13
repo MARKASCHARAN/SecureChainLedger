@@ -16,32 +16,44 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
   onOpenAuth,
 }) => {
   const [quickSearch, setQuickSearch] = useState('');
-  const [activeProductTab, setActiveProductTab] = useState<'2d' | 'radar' | 'space' | 'access'>('2d');
+  const [activeProductTab, setActiveProductTab] = useState<'ledger' | 'anomaly' | 'verify' | 'recall'>('ledger');
 
   const productFamilyData = {
-    '2d': {
-      badge: '2D',
-      title: 'Fast, accurate, detailed imagery of any location on Earth',
-      description: "Powered by 10 of the world's most advanced imaging satellites, WorldView 2D gives you access to ~7 million sq km of daily collection capacity—the equivalent of Australia's landmass—including 3.5+ million sq km of 30 cm resolution imagery. With self-service ordering and optimized scheduling, you can task high-resolution imagery of any location on Earth on mission-relevant timelines.",
+    'ledger': {
+      badge: 'Fabric 2.5 Ledger',
+      tabLabel: 'Provenance Ledger',
+      title: 'Immutable, consensus-verified custody for every pharmaceutical batch',
+      description: 'Powered by Hyperledger Fabric 2.5 permissioned chaincode, SecureChain anchors every batch from active pharmaceutical ingredient (API) synthesis to hospital dispensing. Private MSP channels and Raft consensus ensure tamper-proof history, zero gas fees, and sub-second cryptographic proof of authenticity.',
       image: '/product-family/tab-2d.png',
+      ctaText: 'Explore Ledger',
+      action: onNavigateToLedger,
     },
-    'radar': {
-      badge: 'Radar',
-      title: 'Actionable, 24/7 all-weather intelligence',
-      description: "Through Vantor's virtual constellation, customers can task Umbra's synthetic aperture radar (SAR) satellites, which can collect imagery at night and through clouds and smoke. Vantor's proprietary SAR data processing results in the highest-quality radar imagery, maximizing intelligence value for everything from crisis response to change monitoring.",
+    'anomaly': {
+      badge: 'Sentinel AI Engine',
+      tabLabel: 'Anomaly AI',
+      title: 'Actionable, 24/7 autonomous fraud & counterfeit detection',
+      description: 'Our multi-signal heuristic engine computes real-time 0–100 provenance trust scores, flags rapid impossible custody velocity across geographic nodes, detects quantity leakage, and alerts manufacturers to concurrent cloned QR scans before counterfeit drugs reach patients.',
       image: '/product-family/tab-radar.png',
+      ctaText: 'Inspect AI Engine',
+      action: onNavigateToLedger,
     },
-    'space': {
-      badge: 'Space',
-      title: 'Advanced orbital intelligence with centimeter-level clarity',
-      description: "With so much happening in space, it's critical to be able to see activity in near real-time to maintain space domain awareness, protect your assets, and troubleshoot anomalies. Vantor's satellites capture other spacecraft at <10 cm resolution. With a growing library of non-Earth imagery (NEI), you can also track changes over time.",
+    'verify': {
+      badge: 'GS1 Verification Engine',
+      tabLabel: 'Verification Engine',
+      title: 'Instant digital product passport validation with zero friction',
+      description: 'Patients, pharmacists, and customs inspectors can scan GS1 DataMatrix 2D barcodes to verify GTIN, lot serials, and expiry dates directly against cryptographic state. Instant cryptographic verification proves integrity without exposing confidential enterprise commercial agreements.',
       image: '/product-family/tab-space.png',
+      ctaText: 'Verify Sample Batch',
+      action: () => onNavigateToVerify('BATCH-2026-001'),
     },
-    'access': {
-      badge: 'Access Programs',
-      title: 'Integrated access to the most capable commercial imaging constellation',
-      description: "Get satellite-ownership capabilities without the space hardware expenditures. WorldView Access Programs give you priority tasking, secure workflows, and privacy—with delivery timelines as fast as 15 minutes after collection. Integrate Vantor's capabilities into your operation while maintaining full operational security and data ownership.",
+    'recall': {
+      badge: 'Quarantine Shield',
+      tabLabel: 'Quarantine Shield',
+      title: 'Sub-minute regulatory recalls across global distribution nodes',
+      description: 'When safety excursions or counterfeit attempts are verified, regulators and authorized manufacturers can trigger targeted recall locks. Every connected distributor, hospital, and retail pharmacy node receives instant quarantine enforcement, locking dispensing rights in under 60 seconds.',
       image: '/product-family/tab-access.png',
+      ctaText: 'Enterprise Safety Portal',
+      action: onOpenAuth,
     },
   };
 
@@ -427,7 +439,7 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
                 color: '#ffffff',
                 marginBottom: '0.75rem'
               }}>
-                Keep pace with change by automating the intelligence cycle, from tasking and production to fusion and AI-powered analysis.
+                Keep pace with pharmaceutical safety by automating the provenance lifecycle from batch formulation to AI surveillance.
               </h3>
               <p style={{ color: '#94a3b8', fontSize: '0.975rem', lineHeight: 1.6 }}>
                 Instant heuristic anomaly surveillance continuously flags rapid custody handovers, quantity leakage, and concurrent multi-location consumer scans.
@@ -444,7 +456,7 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
                 <span className="bracket-corner tr" />
                 <span className="bracket-corner bl" />
                 <span className="bracket-corner br" />
-                <span style={{ position: 'relative', zIndex: 2 }}>Our Spatial Intelligence Platform</span>
+                <span style={{ position: 'relative', zIndex: 2 }}>Our Cryptographic Ledger Platform</span>
               </button>
             </div>
           </div>
@@ -507,7 +519,7 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
         </div>
       </section>
 
-      {/* ─── Section 5: The WorldView Product Family (Interactive 4-Tab Showcase) ── */}
+      {/* ─── Section 5: The SecureChain Product Family (Interactive 4-Tab Showcase) ── */}
       <section style={{
         background: '#000000',
         padding: '6rem 0 2rem',
@@ -522,7 +534,7 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
             letterSpacing: '-0.025em',
             color: '#ffffff'
           }}>
-            The WorldView product family
+            The SecureChain product family
           </h2>
         </div>
 
@@ -572,8 +584,8 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
               flexDirection: 'column',
               gap: '0.45rem'
             }}>
-              {(['2d', 'radar', 'space', 'access'] as const).map(tabKey => {
-                const label = tabKey === '2d' ? '2D' : tabKey === 'radar' ? 'Radar' : tabKey === 'space' ? 'Space' : 'Access Programs';
+              {(['ledger', 'anomaly', 'verify', 'recall'] as const).map(tabKey => {
+                const label = productFamilyData[tabKey].tabLabel;
                 const isActive = activeProductTab === tabKey;
                 return (
                   <button
@@ -636,16 +648,18 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
               {productFamilyData[activeProductTab].description}
             </p>
 
-            {/* Vantor Bracket Button */}
+            {/* Bracket Button */}
             <button
-              onClick={onNavigateToLedger}
+              onClick={productFamilyData[activeProductTab].action}
               className="vantor-bracket-btn"
             >
               <span className="bracket-corner tl" />
               <span className="bracket-corner tr" />
               <span className="bracket-corner bl" />
               <span className="bracket-corner br" />
-              <span style={{ position: 'relative', zIndex: 2 }}>Learn more</span>
+              <span style={{ position: 'relative', zIndex: 2 }}>
+                {productFamilyData[activeProductTab].ctaText}
+              </span>
             </button>
           </div>
         </div>
@@ -684,7 +698,7 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
         </div>
       </section>
 
-      {/* ─── Section 7: Enterprise Footer (Matching Vantor Directory Grid) ──────── */}
+      {/* ─── Section 7: Enterprise Footer (Matching Directory Grid) ─────────────── */}
       <footer style={{ background: '#ffffff', color: '#000000', width: '100%' }}>
         {/* Top Header Bar */}
         <div style={{
@@ -698,7 +712,7 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
           maxWidth: '1440px',
           margin: '0 auto'
         }}>
-          {/* Vantor aperture Logo */}
+          {/* SecureChain Aperture Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
               <path d="M11 7C7 11 4 15 4 20C4 25 7 29 11 33" stroke="#000000" strokeWidth="3" strokeLinecap="round" />
@@ -706,7 +720,7 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
               <circle cx="20" cy="20" r="7.5" stroke="#000000" strokeWidth="3" />
             </svg>
             <span style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-0.03em', color: '#000000' }}>
-              Vantor
+              SecureChain
             </span>
           </div>
 
@@ -731,53 +745,53 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
           {/* Column 1 */}
           <div style={{ padding: '2.5rem 2rem', borderRight: '1px solid #e5e7eb' }}>
             <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, textTransform: 'capitalize', marginBottom: '0.75rem' }}>
-              Spatial Intelligence Platform
+              Provenance Architecture
             </div>
             <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>
-              Tensorglobe
+              SecureChain OS
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '2.5rem' }}>
-              <a href="#cortex" className="footer-link-sub">↳ Cortex</a>
-              <a href="#forge" className="footer-link-sub">↳ Forge</a>
-              <a href="#nexus" className="footer-link-sub">↳ Nexus</a>
-              <a href="#hub" className="footer-link-sub">↳ Hub</a>
+              <a href="#fabric-ledger" className="footer-link-sub" onClick={(e) => { e.preventDefault(); onNavigateToLedger(); }}>↳ Fabric Ledger</a>
+              <a href="#smart-contracts" className="footer-link-sub" onClick={(e) => { e.preventDefault(); onNavigateToLedger(); }}>↳ Smart Contracts</a>
+              <a href="#channel-partitions" className="footer-link-sub">↳ Channel Partitions</a>
+              <a href="#node-telemetry" className="footer-link-sub">↳ Node Telemetry</a>
             </div>
 
             <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, textTransform: 'capitalize', marginBottom: '0.75rem' }}>
-              Dynamic Foundation
+              Cryptographic Core
             </div>
             <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>
-              Vivid
+              Consensus Engine
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <a href="#mosaic" className="footer-link-sub">↳ Mosaic</a>
-              <a href="#terrain" className="footer-link-sub">↳ Terrain</a>
-              <a href="#features" className="footer-link-sub">↳ Features</a>
+              <a href="#raft" className="footer-link-sub">↳ Raft Consensus</a>
+              <a href="#msp" className="footer-link-sub">↳ MSP Identity</a>
+              <a href="#zkp" className="footer-link-sub">↳ Zero-Knowledge Proofs</a>
             </div>
           </div>
 
           {/* Column 2 */}
           <div style={{ padding: '2.5rem 2rem', borderRight: '1px solid #e5e7eb' }}>
             <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, textTransform: 'capitalize', marginBottom: '0.75rem' }}>
-              Real-Time Tasking
+              Real-Time Surveillance
             </div>
             <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>
-              WorldView
+              Sentinel AI
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '2.5rem' }}>
-              <a href="#2d" className="footer-link-sub" onClick={(e) => { e.preventDefault(); setActiveProductTab('2d'); }}>↳ 2D</a>
-              <a href="#3d" className="footer-link-sub">↳ 3D</a>
-              <a href="#radar" className="footer-link-sub" onClick={(e) => { e.preventDefault(); setActiveProductTab('radar'); }}>↳ Radar</a>
-              <a href="#space" className="footer-link-sub" onClick={(e) => { e.preventDefault(); setActiveProductTab('space'); }}>↳ Space</a>
-              <a href="#access" className="footer-link-sub" onClick={(e) => { e.preventDefault(); setActiveProductTab('access'); }}>↳ Access Programs</a>
+              <a href="#radar" className="footer-link-sub" onClick={(e) => { e.preventDefault(); setActiveProductTab('anomaly'); }}>↳ Anomaly Radar</a>
+              <a href="#velocity" className="footer-link-sub" onClick={(e) => { e.preventDefault(); setActiveProductTab('anomaly'); }}>↳ Velocity Tracking</a>
+              <a href="#clones" className="footer-link-sub" onClick={(e) => { e.preventDefault(); setActiveProductTab('anomaly'); }}>↳ QR Clone Detection</a>
+              <a href="#excursions" className="footer-link-sub" onClick={(e) => { e.preventDefault(); setActiveProductTab('anomaly'); }}>↳ Excursion Alerts</a>
+              <a href="#scoring" className="footer-link-sub" onClick={(e) => { e.preventDefault(); setActiveProductTab('anomaly'); }}>↳ Trust Scoring</a>
             </div>
 
             <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, textTransform: 'capitalize', marginBottom: '0.75rem' }}>
               Mission Solutions
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginTop: '0.2rem' }}>Raptor</div>
-              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginTop: '0.2rem' }}>Sentry</div>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginTop: '0.2rem' }}>Batch Tracer</div>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginTop: '0.2rem' }}>Quarantine Shield</div>
             </div>
           </div>
 
@@ -787,32 +801,34 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
               Industries
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '2.5rem' }}>
-              <a href="#defense" className="footer-link-primary">Defense</a>
-              <a href="#intelligence" className="footer-link-primary">Intelligence</a>
-              <a href="#systems" className="footer-link-primary">Systems Integrators</a>
-              <a href="#civil" className="footer-link-primary">Civil Government</a>
-              <a href="#commercial" className="footer-link-primary">Commercial</a>
+              <a href="#pharma" className="footer-link-primary">Pharma Manufacturers</a>
+              <a href="#distributors" className="footer-link-primary">Global 3PL Distributors</a>
+              <a href="#hospitals" className="footer-link-primary">Hospitals & Health Systems</a>
+              <a href="#pharmacies" className="footer-link-primary">Retail Pharmacies</a>
+              <a href="#regulators" className="footer-link-primary">Regulatory Authorities</a>
             </div>
 
             <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, textTransform: 'capitalize', marginBottom: '0.75rem' }}>
-              Additional Information
+              Compliance & Standards
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <a href="#news-bureau" className="footer-link-primary">News Bureau Program</a>
-              <a href="#open-data" className="footer-link-primary">Open Data Program</a>
-              <a href="#resources" className="footer-link-primary">Resources</a>
+              <a href="#dscsa" className="footer-link-primary">DSCSA Track-and-Trace</a>
+              <a href="#fmd" className="footer-link-primary">EU FMD Directives</a>
+              <a href="#gs1" className="footer-link-primary">GS1 DataMatrix Serialization</a>
+              <a href="#fda21" className="footer-link-primary">FDA 21 CFR Part 11</a>
             </div>
           </div>
 
           {/* Column 4 */}
           <div style={{ padding: '2.5rem 2rem', borderRight: '1px solid #e5e7eb' }}>
             <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, textTransform: 'capitalize', marginBottom: '0.75rem' }}>
-              News & Events
+              Network & Telemetry
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '2.5rem' }}>
-              <a href="#latest" className="footer-link-primary">Latest at Vantor</a>
-              <a href="#events" className="footer-link-primary">Events</a>
-              <a href="#media" className="footer-link-primary">Media Coverage</a>
+              <a href="#latest" className="footer-link-primary">Latest at SecureChain</a>
+              <a href="#advisories" className="footer-link-primary">Security Bulletins</a>
+              <a href="#status" className="footer-link-primary">Ledger Health Status</a>
+              <a href="#api" className="footer-link-primary">API Documentation</a>
             </div>
 
             <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, textTransform: 'capitalize', marginBottom: '0.75rem' }}>
@@ -820,8 +836,8 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
               <a href="#contact" className="footer-link-primary" onClick={(e) => { e.preventDefault(); onOpenAuth(); }}>Contact Us</a>
-              <a href="#partner" className="footer-link-primary">Become a Partner</a>
-              <a href="#directory" className="footer-link-primary">Partner Directory</a>
+              <a href="#request-node" className="footer-link-primary" onClick={(e) => { e.preventDefault(); onOpenAuth(); }}>Request Node Access</a>
+              <a href="#partner-directory" className="footer-link-primary">Partner Directory</a>
             </div>
           </div>
 
@@ -831,19 +847,19 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
               Company
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '2.5rem' }}>
-              <a href="#about" className="footer-link-primary">About</a>
-              <a href="#leadership" className="footer-link-primary">Leadership</a>
+              <a href="#about" className="footer-link-primary">About SecureChain</a>
+              <a href="#leadership" className="footer-link-primary">Leadership & Governance</a>
               <a href="#careers" className="footer-link-primary">Careers</a>
-              <a href="#constellation" className="footer-link-primary">Our Constellation</a>
-              <a href="#sustainability" className="footer-link-primary">Sustainability</a>
+              <a href="#validators" className="footer-link-primary">Validator Consortium</a>
+              <a href="#patient-safety" className="footer-link-primary">Patient Safety Mission</a>
             </div>
 
             <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, textTransform: 'capitalize', marginBottom: '0.75rem' }}>
               Login & Explore
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <a href="#hub" className="footer-link-primary" onClick={(e) => { e.preventDefault(); onOpenAuth(); }}>The Vantor Hub</a>
-              <a href="#discover" className="footer-link-primary" onClick={(e) => { e.preventDefault(); onNavigateToLedger(); }}>Discover</a>
+              <a href="#hub" className="footer-link-primary" onClick={(e) => { e.preventDefault(); onOpenAuth(); }}>Enterprise Portal Login</a>
+              <a href="#discover" className="footer-link-primary" onClick={(e) => { e.preventDefault(); onNavigateToLedger(); }}>Browse Public Ledger</a>
             </div>
           </div>
         </div>
@@ -862,13 +878,13 @@ export const HeroHomePage: React.FC<HeroHomePageProps> = ({
           {/* Legal Links */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.75rem', flexWrap: 'wrap' }}>
             <a href="#privacy" style={{ color: '#0f172a', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none' }}>Privacy Policy</a>
-            <a href="#terms" style={{ color: '#0f172a', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none' }}>License Terms & Policies</a>
+            <a href="#terms" style={{ color: '#0f172a', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none' }}>Security Terms & SLA</a>
             <a href="#terms-use" style={{ color: '#0f172a', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none' }}>Website Terms of Use</a>
           </div>
 
           {/* Copyright text */}
-          <div style={{ color: '#64748b', fontSize: '0.75rem', maxWidth: '440px', lineHeight: 1.5 }}>
-            ©2026 Vantor. Vantor, Raptor, Sentry, Vivid, WorldView, Tensorglobe, Cortex, Forge, and Nexus are trademarks of Vantor Holdings, Inc.
+          <div style={{ color: '#64748b', fontSize: '0.75rem', maxWidth: '460px', lineHeight: 1.5 }}>
+            © 2026 SecureChainLedger. SecureChain, Sentinel AI, Quarantine Shield, and SecureChain OS are trademarks of SecureChainLedger Holdings, Inc.
           </div>
 
           {/* Social Media Icons */}
