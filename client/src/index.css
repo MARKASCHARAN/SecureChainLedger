@@ -409,7 +409,158 @@ tr:hover td {
   height: 14px;
 }
 
+/* Dark Bracket Button for Light/White Surfaces */
+.vantor-bracket-btn-dark {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justifyContent: center;
+  padding: 0.85rem 2.25rem;
+  background: transparent;
+  color: #000000;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.vantor-bracket-btn-dark .bracket-corner {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: #000000;
+  transition: all 0.25s ease;
+  pointer-events: none;
+}
+
+.vantor-bracket-btn-dark .bracket-corner.tl {
+  top: 0;
+  left: 0;
+  border-top: 1.5px solid;
+  border-left: 1.5px solid;
+}
+
+.vantor-bracket-btn-dark .bracket-corner.tr {
+  top: 0;
+  right: 0;
+  border-top: 1.5px solid;
+  border-right: 1.5px solid;
+}
+
+.vantor-bracket-btn-dark .bracket-corner.bl {
+  bottom: 0;
+  left: 0;
+  border-bottom: 1.5px solid;
+  border-left: 1.5px solid;
+}
+
+.vantor-bracket-btn-dark .bracket-corner.br {
+  bottom: 0;
+  right: 0;
+  border-bottom: 1.5px solid;
+  border-right: 1.5px solid;
+}
+
+.vantor-bracket-btn-dark:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.vantor-bracket-btn-dark:hover .bracket-corner {
+  border-color: #0284c7;
+  width: 14px;
+  height: 14px;
+}
+
+/* Product family tab button */
+.product-family-tab-btn {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  padding: 0.35rem 0;
+  display: block;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.product-family-tab-btn.active {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.product-family-tab-btn.inactive {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.product-family-tab-btn.inactive:hover {
+  color: rgba(255, 255, 255, 0.95);
+  transform: translateX(4px);
+}
+
+.product-family-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 1px;
+}
+
+/* Enterprise footer hover links */
+.footer-link-sub {
+  color: #334155;
+  font-size: 0.88rem;
+  line-height: 1.8;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.footer-link-sub:hover {
+  color: #0284c7;
+}
+
+.footer-link-primary {
+  color: #0f172a;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 2;
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.footer-link-primary:hover {
+  color: #0284c7;
+}
+
+.product-family-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 620px;
+}
+
+@media (max-width: 960px) {
+  .product-family-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .glass-card { padding: 1.15rem; }
   h1 { font-size: 1.75rem; }
+  .footer-grid-container {
+    grid-template-columns: 1fr !important;
+  }
 }
+
