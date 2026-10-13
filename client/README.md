@@ -1,34 +1,32 @@
-# Client — React + TypeScript + Vite
+# React + TypeScript + Vite
 
-This folder contains the **SecureChainLedger** frontend application.
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
-## Stack
+Currently, two official plugins are available:
 
-- React 18 + TypeScript
-- Vite
-- Tailwind CSS
-- Redux Toolkit
-- React Router
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## Getting Started
+## React Compiler
 
-```bash
-npm install
-npm run dev
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the Oxlint configuration
+
+If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+
+```json
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  }
+}
 ```
 
-## Folder Structure
-
-```
-src/
-├── app/          # App entry, providers, routing
-├── components/   # Shared/reusable UI components
-├── features/     # Feature-sliced modules (batch, transfer, recall, audit)
-├── hooks/        # Custom React hooks
-├── pages/        # Page-level components
-├── services/     # API client integrations
-├── store/        # Redux store & slices
-├── styles/       # Global CSS / design tokens
-├── types/        # Shared TypeScript types
-└── utils/        # Utility functions
-```
+See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
