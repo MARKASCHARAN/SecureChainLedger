@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { AuthModal } from './components/AuthModal';
 import { PublicVerificationPage } from './pages/PublicVerificationPage';
+import { LedgerExplorerPage } from './pages/LedgerExplorerPage';
 import { BatchesPage } from './pages/BatchesPage';
 import { TransfersPage } from './pages/TransfersPage';
 import { InventoryPage } from './pages/InventoryPage';
@@ -59,6 +60,7 @@ export const App: React.FC = () => {
 
       <main style={{ flex: 1 }}>
         {activeTab === 'verify' && <PublicVerificationPage />}
+        {activeTab === 'ledger' && <LedgerExplorerPage />}
         
         {activeTab === 'batches' && (
           user ? (

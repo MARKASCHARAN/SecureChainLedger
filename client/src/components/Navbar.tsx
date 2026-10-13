@@ -1,6 +1,6 @@
 // client/src/components/Navbar.tsx
 import React from 'react';
-import { ShieldCheck, LogOut, UserCircle2, Layers, Truck, AlertTriangle, PackageCheck } from 'lucide-react';
+import { ShieldCheck, LogOut, UserCircle2, Layers, Truck, AlertTriangle, PackageCheck, Cpu } from 'lucide-react';
 import type { User } from '../types';
 
 interface NavbarProps {
@@ -20,6 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const navItems = [
     { id: 'verify', label: 'Public Verification', icon: ShieldCheck, public: true },
+    { id: 'ledger', label: 'Ledger Explorer', icon: Cpu, public: true },
     { id: 'batches', label: 'Batches & Catalog', icon: Layers, roles: ['MANUFACTURER', 'REGULATOR', 'ADMIN'] },
     { id: 'transfers', label: 'Custody Transfers', icon: Truck, roles: ['MANUFACTURER', 'DISTRIBUTOR', 'HOSPITAL', 'PHARMACY', 'REGULATOR', 'ADMIN'] },
     { id: 'inventory', label: 'Inventory', icon: PackageCheck, roles: ['MANUFACTURER', 'DISTRIBUTOR', 'HOSPITAL', 'PHARMACY', 'REGULATOR', 'ADMIN'] },

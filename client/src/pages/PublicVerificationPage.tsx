@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   ShieldCheck, AlertOctagon, AlertTriangle, Search, CheckCircle2, 
-  Building2, FileCheck, Sparkles 
+  Building2, FileCheck, Sparkles, QrCode, Camera, X 
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { VerificationResult } from '../types';
@@ -11,6 +11,10 @@ export const PublicVerificationPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<VerificationResult | null>(null);
+
+  // Scanner & QR modal states
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
 
   // Hash check state
   const [docHashInput, setDocHashInput] = useState('');
@@ -83,6 +87,15 @@ export const PublicVerificationPage: React.FC = () => {
             onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
             style={{ border: 'none', background: 'transparent', fontSize: '1rem' }}
           />
+          <button
+            onClick={() => setScannerOpen(true)}
+            className="btn btn-secondary"
+            style={{ padding: '0.65rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap' }}
+            title="Scan Packaging QR Code"
+          >
+            <Camera size={18} />
+            <span>Scan QR</span>
+          </button>
           <button
             onClick={() => handleVerify()}
             disabled={loading || !batchNumber.trim()}
@@ -170,9 +183,18 @@ export const PublicVerificationPage: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ textAlign: 'right', fontSize: '0.825rem', color: 'var(--text-muted)' }}>
-                <div>Batch: <span className="font-mono" style={{ color: '#fff', fontWeight: 600 }}>{result.batchNumber}</span></div>
-                <div>Verified: {new Date(result.verifiedAt).toLocaleTimeString()}</div>
+              <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                <button
+                  onClick={() => setQrModalOpen(true)}
+                  className="btn btn-secondary"
+                  style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                >
+                  <QrCode size={14} color="#38bdf8" /> Packaging QR
+                </button>
+                <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
+                  <div>Batch: <span className="font-mono" style={{ color: '#fff', fontWeight: 600 }}>{result.batchNumber}</span></div>
+                  <div>Verified: {new Date(result.verifiedAt).toLocaleTimeString()}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -508,6 +530,200 @@ export const PublicVerificationPage: React.FC = () => {
                 )}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Camera / Packaging QR Scanner Viewfinder Modal */}
+      {scannerOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1.5rem',
+          zIndex: 1000
+        }}>
+          <div className="glass-card" style={{ maxWidth: '480px', width: '100%', textAlign: 'center', padding: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Camera size={20} color="#38bdf8" />
+                <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Optical Barcode Scanner</h3>
+              </div>
+              <button onClick={() => setScannerOpen(false)} className="btn" style={{ padding: '0.35rem', color: 'var(--text-muted)' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Viewfinder Target */}
+            <div style={{
+              position: 'relative',
+              width: '260px',
+              height: '260px',
+              margin: '0 auto 1.5rem',
+              borderRadius: '16px',
+              border: '2px solid rgba(56, 189, 248, 0.5)',
+              background: 'radial-gradient(circle, rgba(56, 189, 248, 0.05) 0%, rgba(0, 0, 0, 0.6) 100%)',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 0 30px rgba(56, 189, 248, 0.2)'
+            }}>
+              {/* Corner brackets */}
+              <div style={{ position: 'absolute', top: 8, left: 8, width: 24, height: 24, borderTop: '3px solid #38bdf8', borderLeft: '3px solid #38bdf8' }} />
+              <div style={{ position: 'absolute', top: 8, right: 8, width: 24, height: 24, borderTop: '3px solid #38bdf8', borderRight: '3px solid #38bdf8' }} />
+              <div style={{ position: 'absolute', bottom: 8, left: 8, width: 24, height: 24, borderBottom: '3px solid #38bdf8', borderLeft: '3px solid #38bdf8' }} />
+              <div style={{ position: 'absolute', bottom: 8, right: 8, width: 24, height: 24, borderBottom: '3px solid #38bdf8', borderRight: '3px solid #38bdf8' }} />
+
+              {/* Animated laser scan beam */}
+              <div style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                height: '3px',
+                background: 'linear-gradient(90deg, transparent, #38bdf8, #34d399, transparent)',
+                boxShadow: '0 0 12px #38bdf8',
+                animation: 'scanLaser 2.2s infinite ease-in-out',
+                top: '40%'
+              }} />
+
+              <div style={{ opacity: 0.3, color: '#38bdf8' }}>
+                <QrCode size={110} />
+              </div>
+            </div>
+
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
+              Hold pharmaceutical packaging QR or 2D DataMatrix code in front of the lens.
+            </p>
+
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+              Instant Simulated Recognition Test:
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+              {['BATCH-2026-001', 'WF-BATCH-TEST'].map((b) => (
+                <button
+                  key={b}
+                  onClick={() => {
+                    setScannerOpen(false);
+                    setBatchNumber(b);
+                    handleVerify(b);
+                  }}
+                  className="btn btn-secondary"
+                  style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
+                >
+                  Scan {b}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2D DataMatrix / QR Code Generator Modal */}
+      {qrModalOpen && result && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1.5rem',
+          zIndex: 1000
+        }}>
+          <div className="glass-card" style={{ maxWidth: '480px', width: '100%', textAlign: 'center', padding: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <QrCode size={20} color="#10b981" />
+                <h3 style={{ fontSize: '1.25rem', margin: 0 }}>GS1 Packaging DataMatrix</h3>
+              </div>
+              <button onClick={() => setQrModalOpen(false)} className="btn" style={{ padding: '0.35rem', color: 'var(--text-muted)' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* High-fidelity SVG QR Visualizer */}
+            <div style={{
+              background: '#ffffff',
+              padding: '1.25rem',
+              borderRadius: '12px',
+              display: 'inline-block',
+              margin: '0 auto 1.25rem',
+              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4)'
+            }}>
+              <svg width="180" height="180" viewBox="0 0 29 29" shapeRendering="crispEdges">
+                <rect width="29" height="29" fill="#ffffff" />
+                {/* Corner Finder 1 */}
+                <rect x="2" y="2" width="7" height="7" fill="#000000" />
+                <rect x="3" y="3" width="5" height="5" fill="#ffffff" />
+                <rect x="4" y="4" width="3" height="3" fill="#000000" />
+                {/* Corner Finder 2 */}
+                <rect x="20" y="2" width="7" height="7" fill="#000000" />
+                <rect x="21" y="3" width="5" height="5" fill="#ffffff" />
+                <rect x="22" y="4" width="3" height="3" fill="#000000" />
+                {/* Corner Finder 3 */}
+                <rect x="2" y="20" width="7" height="7" fill="#000000" />
+                <rect x="3" y="21" width="5" height="5" fill="#ffffff" />
+                <rect x="4" y="22" width="3" height="3" fill="#000000" />
+                {/* Simulated DataMatrix Pixels */}
+                <rect x="11" y="2" width="2" height="2" fill="#000" />
+                <rect x="15" y="4" width="2" height="2" fill="#000" />
+                <rect x="11" y="6" width="3" height="1" fill="#000" />
+                <rect x="10" y="10" width="3" height="3" fill="#000" />
+                <rect x="15" y="10" width="2" height="2" fill="#000" />
+                <rect x="14" y="14" width="4" height="2" fill="#000" />
+                <rect x="10" y="15" width="2" height="3" fill="#000" />
+                <rect x="11" y="20" width="2" height="2" fill="#000" />
+                <rect x="15" y="22" width="3" height="2" fill="#000" />
+                <rect x="20" y="11" width="2" height="3" fill="#000" />
+                <rect x="24" y="13" width="2" height="2" fill="#000" />
+                <rect x="20" y="17" width="3" height="2" fill="#000" />
+                <rect x="24" y="20" width="2" height="4" fill="#000" />
+                <rect x="21" y="23" width="2" height="2" fill="#000" />
+              </svg>
+            </div>
+
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.03)',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border-subtle)',
+              padding: '1rem',
+              textAlign: 'left',
+              fontSize: '0.825rem',
+              color: 'var(--text-secondary)',
+              marginBottom: '1.25rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.35rem'
+            }}>
+              <div><strong>(01) GTIN:</strong> <span className="font-mono" style={{ color: '#fff' }}>08901234567890</span></div>
+              <div><strong>(10) BATCH / LOT:</strong> <span className="font-mono" style={{ color: '#38bdf8' }}>{result.batchNumber}</span></div>
+              <div><strong>(17) EXP DATE:</strong> <span className="font-mono" style={{ color: '#fff' }}>{new Date(result.expiresAt).toISOString().split('T')[0]}</span></div>
+              <div><strong>(21) SERIAL:</strong> <span className="font-mono" style={{ color: '#34d399' }}>SC-{result.batchNumber}-0091</span></div>
+            </div>
+
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(`urn:securechain:pharma:batch:${result.batchNumber}`);
+                alert('Cryptographic Batch URI copied to clipboard!');
+              }}
+              className="btn btn-primary"
+              style={{ width: '100%' }}
+            >
+              Copy Cryptographic GS1 Payload
+            </button>
           </div>
         </div>
       )}

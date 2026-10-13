@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layers, Plus, CheckCircle2, Truck, ShieldCheck, X, Sparkles, AlertTriangle } from 'lucide-react';
+import { Layers, Plus, CheckCircle2, Truck, ShieldCheck, X, Sparkles, AlertTriangle, Package } from 'lucide-react';
 import { api } from '../services/api';
 import type { Batch, Product, User, Organization, AiIntelligence } from '../types';
 
@@ -17,6 +17,15 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
   // AI Inspection modal state
   const [selectedAiBatch, setSelectedAiBatch] = useState<AiIntelligence | null>(null);
   const [aiLoadingBatchId, setAiLoadingBatchId] = useState<string | null>(null);
+
+  // New product modal state
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [prodBrandName, setProdBrandName] = useState('');
+  const [prodGenericName, setProdGenericName] = useState('');
+  const [prodFormulation, setProdFormulation] = useState('Tablet');
+  const [prodStrength, setProdStrength] = useState('500mg');
+  const [prodScheduled, setProdScheduled] = useState(false);
+  const [submittingProduct, setSubmittingProduct] = useState(false);
 
   // New batch modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -58,6 +67,32 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleCreateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!prodBrandName || !prodGenericName) return;
+    setSubmittingProduct(true);
+    try {
+      const res = await api.createProduct({
+        brandName: prodBrandName.trim(),
+        genericName: prodGenericName.trim(),
+        formulation: prodFormulation,
+        strength: prodStrength.trim(),
+        scheduledDrug: prodScheduled,
+      });
+      setShowProductModal(false);
+      setProdBrandName('');
+      setProdGenericName('');
+      await loadData();
+      if (res?.product?.id) {
+        setNewProductId(res.product.id);
+      }
+    } catch (err: any) {
+      alert(`Error creating product: ${err.message}`);
+    } finally {
+      setSubmittingProduct(false);
+    }
+  };
 
   const handleCreateBatch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,13 +175,22 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
         </div>
 
         {isManufacturer && (
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="btn btn-primary"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          >
-            <Plus size={18} /> Register New Batch
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setShowProductModal(true)}
+              className="btn btn-secondary"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <Package size={17} /> Add Drug Product
+            </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="btn btn-primary"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <Plus size={18} /> Register New Batch
+            </button>
+          </div>
         )}
       </div>
 
@@ -628,6 +672,105 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                 Close Insights
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Register Drug Product */}
+      {showProductModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(8px)', zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
+        }}>
+          <div className="glass-card" style={{ maxWidth: '520px', width: '100%', padding: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Package size={22} color="#38bdf8" />
+                <h3 style={{ fontSize: '1.35rem', margin: 0 }}>Register Drug Formulation</h3>
+              </div>
+              <button onClick={() => setShowProductModal(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateProduct} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label className="form-label">Commercial Brand Name</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. Lipitor-XR, CiproMax, Amox-500"
+                  value={prodBrandName}
+                  onChange={(e) => setProdBrandName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="form-label">Generic Active Molecule</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. Atorvastatin Calcium, Ciprofloxacin"
+                  value={prodGenericName}
+                  onChange={(e) => setProdGenericName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label className="form-label">Formulation Type</label>
+                  <select
+                    className="form-input"
+                    value={prodFormulation}
+                    onChange={(e) => setProdFormulation(e.target.value)}
+                  >
+                    <option value="Tablet" style={{ background: '#0d121f' }}>Tablet</option>
+                    <option value="Capsule" style={{ background: '#0d121f' }}>Capsule</option>
+                    <option value="Liquid" style={{ background: '#0d121f' }}>Liquid / Syrup</option>
+                    <option value="Injection" style={{ background: '#0d121f' }}>Injection (IV/IM)</option>
+                    <option value="Inhaler" style={{ background: '#0d121f' }}>Inhaler</option>
+                    <option value="Topical" style={{ background: '#0d121f' }}>Topical Cream</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="form-label">Dosage Strength</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. 500mg, 10mg/5ml"
+                    value={prodStrength}
+                    onChange={(e) => setProdStrength(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                <input
+                  type="checkbox"
+                  id="scheduledDrug"
+                  checked={prodScheduled}
+                  onChange={(e) => setProdScheduled(e.target.checked)}
+                  style={{ accentColor: '#38bdf8', width: '16px', height: '16px' }}
+                />
+                <label htmlFor="scheduledDrug" style={{ fontSize: '0.85rem', color: '#cbd5e1', cursor: 'pointer' }}>
+                  Controlled / Scheduled Formulation (Requires heightened custody tracking)
+                </label>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.25rem' }}>
+                <button type="button" onClick={() => setShowProductModal(false)} className="btn btn-secondary">
+                  Cancel
+                </button>
+                <button type="submit" disabled={submittingProduct} className="btn btn-primary">
+                  {submittingProduct ? 'Registering...' : 'Register Formulation'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

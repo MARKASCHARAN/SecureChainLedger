@@ -122,4 +122,8 @@ export const api = {
 
   // Organizations
   listOrganizations: () => request<{ organizations: any[] }>('/organizations'),
+
+  // Ledger Explorer
+  listLedgerTransactions: () =>
+    request<{ transactions: any[]; outbox: any }>('/ledger/transactions'),
 };

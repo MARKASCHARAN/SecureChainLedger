@@ -306,6 +306,21 @@ tr:hover td {
   50% { opacity: 1; transform: scale(1.05); }
 }
 
+@keyframes scanLaser {
+  0% { top: 5%; opacity: 0.3; }
+  50% { top: 90%; opacity: 1; }
+  100% { top: 5%; opacity: 0.3; }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spinSlow 1.5s linear infinite;
+}
+
 .animate-pulse-glow {
   animation: pulseGlow 3s infinite ease-in-out;
 }

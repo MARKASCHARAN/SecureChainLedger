@@ -12,6 +12,7 @@ import inventoryRoutes from '../modules/inventory/inventory.routes.js';
 import recallRoutes    from '../modules/recalls/recall.routes.js';
 import verificationRoutes from '../modules/verification/verification.routes.js';
 import aiRoutes           from '../modules/ai/ai.routes.js';
+import ledgerRoutes       from '../modules/ledger/ledger.routes.js';
 
 const router = Router();
 
@@ -24,5 +25,6 @@ router.use('/inventory',     inventoryRoutes);
 router.use('/recalls',       recallRoutes);
 router.use('/verification',  verificationRoutes);
 router.use('/ai',            aiRoutes);
+router.use('/ledger',        ledgerRoutes);
 
 export default router;
