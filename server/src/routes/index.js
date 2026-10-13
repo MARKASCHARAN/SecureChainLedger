@@ -8,6 +8,10 @@ import orgRoutes     from '../modules/organizations/org.routes.js';
 import productRoutes from '../modules/products/product.routes.js';
 import transferRoutes from '../modules/transfers/transfer.routes.js';
 
+import inventoryRoutes from '../modules/inventory/inventory.routes.js';
+import recallRoutes    from '../modules/recalls/recall.routes.js';
+import verificationRoutes from '../modules/verification/verification.routes.js';
+
 const router = Router();
 
 router.use('/auth',          authRoutes);
@@ -15,10 +19,8 @@ router.use('/batches',       batchRoutes);
 router.use('/organizations', orgRoutes);
 router.use('/products',      productRoutes);
 router.use('/transfers',     transferRoutes);
-
-// Placeholder stubs — filled in subsequent phases
-// router.use('/inventory',   inventoryRoutes);
-// router.use('/recalls',     recallRoutes);
-// router.use('/verification',verificationRoutes);
+router.use('/inventory',     inventoryRoutes);
+router.use('/recalls',       recallRoutes);
+router.use('/verification',  verificationRoutes);
 
 export default router;
