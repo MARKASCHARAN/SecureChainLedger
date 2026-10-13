@@ -32,6 +32,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   // All navigation options are housed in the AppSidebar.
   // =========================================================================
   if (user) {
+    const getInitials = (email: string) => {
+      if (!email) return 'SC';
+      const parts = email.split('@')[0].split('.');
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return email.slice(0, 2).toUpperCase();
+    };
+
     return (
       <header style={{
         position: 'sticky',
@@ -68,8 +77,38 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </div>
 
-          {/* Right: Role indicator & Logout button */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+          {/* Right: User Profile & Actions (Moved from Sidebar to Navbar) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+            {/* User Profile Avatar & Info */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {/* Avatar Initials Badge */}
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: '#0f172a',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.825rem',
+                fontWeight: 700,
+                flexShrink: 0
+              }}>
+                {getInitials(user.email)}
+              </div>
+
+              {/* Name & Email Details */}
+              <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.2 }}>
+                  {user.email.split('@')[0].replace('.', ' ')}
+                </span>
+                <span style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: 1.2, marginTop: '2px' }}>
+                  {user.email}
+                </span>
+              </div>
+            </div>
+
             {/* Role Badge */}
             <span style={{
               background: '#f1f5f9',

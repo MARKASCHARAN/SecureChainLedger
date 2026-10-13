@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Layers, Truck, PackageCheck, AlertTriangle, 
   Database, QrCode, ShieldCheck, Search,
-  Sparkles, LogOut
+  Sparkles
 } from 'lucide-react';
 import type { User, UserRole } from '../types';
 
@@ -10,7 +10,7 @@ interface AppSidebarProps {
   user: User;
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  onLogout: () => void;
+  onLogout?: () => void;
 }
 
 interface NavItem {
@@ -24,8 +24,7 @@ interface NavItem {
 export const AppSidebar: React.FC<AppSidebarProps> = ({
   user,
   activeTab,
-  setActiveTab,
-  onLogout
+  setActiveTab
 }) => {
   const [searchFilter, setSearchFilter] = useState('');
 
@@ -85,14 +84,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     .filter(item => item.roles.includes(user.role))
     .filter(item => !searchFilter || item.label.toLowerCase().includes(searchFilter.toLowerCase()));
 
-  const getInitials = (email: string) => {
-    if (!email) return 'SC';
-    const parts = email.split('@')[0].split('.');
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return email.slice(0, 2).toUpperCase();
-  };
+
 
   return (
     <aside style={{
@@ -334,69 +326,6 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             <Sparkles size={13} color="#34d399" />
             <span>Channel: pharma-channel</span>
           </div>
-        </div>
-      </div>
-
-      {/* ─── Sidebar Footer: User Avatar & Profile ───────────────────────── */}
-      <div style={{
-        borderTop: '1px solid #e2e8f0',
-        padding: '0.9rem 1.15rem',
-        background: '#ffffff'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          width: '100%'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
-            {/* Avatar Initials Badge */}
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: '#0f172a',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              flexShrink: 0
-            }}>
-              {getInitials(user.email)}
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <span style={{ fontSize: '0.825rem', fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user.email.split('@')[0].replace('.', ' ')}
-              </span>
-              <span style={{ fontSize: '0.72rem', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user.email}
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onLogout}
-            title="Log Out"
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#94a3b8',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0.4rem',
-              borderRadius: '6px',
-              transition: 'color 0.15s ease'
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#e11d48'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; }}
-          >
-            <LogOut size={16} />
-          </button>
         </div>
       </div>
     </aside>
