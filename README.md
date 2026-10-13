@@ -162,11 +162,12 @@ sequenceDiagram
 
 This project addresses a real national and industry-level need.
 
-NITI Aayog’s blockchain strategy work documented a pharmaceutical supply chain pilot with Oracle, Apollo Hospitals, Strides, and GS1 aimed at reducing fake drugs and improving transparency. The Department of Pharmaceuticals also highlighted the importance of an IT-enabled logistics and supply-chain system for real-time medicine distribution to avoid stock-out situations
+NITI Aayog's blockchain strategy work documented a pharmaceutical supply chain pilot with Oracle, Apollo Hospitals, Strides, and GS1 aimed at reducing fake drugs and improving transparency. The Department of Pharmaceuticals also highlighted the importance of an IT-enabled logistics and supply-chain system for real-time medicine distribution to avoid stock-out situations
 
-Fabric’s official documentation explicitly describes it as an **enterprise-grade permissioned distributed ledger**, and its architecture supports private data collections and permissioned membership services that are especially useful for regulated industries and competing businesses sharing a common network. 
+Fabric's official documentation explicitly describes it as an **enterprise-grade permissioned distributed ledger**, and its architecture supports private data collections and permissioned membership services that are especially useful for regulated industries and competing businesses sharing a common network.
 
-##  The Trust Gap
+## The Trust Gap
+
 | Feature | Traditional Siloed Systems | SecureChainLedger (Blockchain) |
 | :--- | :--- | :--- |
 | **Data Ownership** | Controlled by one entity | Shared by the Consortium |
@@ -176,17 +177,15 @@ Fabric’s official documentation explicitly describes it as an **enterprise-gra
 
 ## Problem Statement
 
-
-
 As a result, the ecosystem faces:
 
-- limited batch-level traceability  
-- counterfeit and suspect-product risk  
-- weak chain-of-custody proof  
-- delayed recalls and investigations  
-- fragmented compliance records  
-- poor real-time stock visibility  
-- dependence on siloed or manually reconciled systems  
+- limited batch-level traceability
+- counterfeit and suspect-product risk
+- weak chain-of-custody proof
+- delayed recalls and investigations
+- fragmented compliance records
+- poor real-time stock visibility
+- dependence on siloed or manually reconciled systems
 
 Even a single mismatch in logistics data can delay critical medicine movement, weaken trust between supply-chain partners, and increase the risk of unsafe or unverified product flow.
 
@@ -198,18 +197,16 @@ SecureChainLedger provides a **shared source of truth** for medicine batch movem
 
 The platform records key supply-chain events such as:
 
-- batch creation  
-- QA approval references  
-- distributor transfers  
-- receipt confirmations  
-- downstream allocations  
-- pharmacy or hospital verification  
-- recall notices  
-- compliance and audit proofs  
+- batch creation
+- QA approval references
+- distributor transfers
+- receipt confirmations
+- downstream allocations
+- pharmacy or hospital verification
+- recall notices
+- compliance and audit proofs
 
-Critical trust events are recorded on **Hyperledger Fabric**, while sensitive documents and operational metadata stay securely off-chain. This hybrid model matches Fabric’s enterprise design around permissioned membership, privacy, and confidential data sharing across regulated participants. :contentReference[oaicite:1]{index=1}
-
-
+Critical trust events are recorded on **Hyperledger Fabric**, while sensitive documents and operational metadata stay securely off-chain. This hybrid model matches Fabric's enterprise design around permissioned membership, privacy, and confidential data sharing across regulated participants.
 
 ## CORE FUNCTIONAL CAPABILITIES
 
@@ -246,8 +243,3 @@ The following process flow outlines the lifecycle of a pharmaceutical asset with
 ### PHASE III: ENDPOINT & GOVERNANCE
 * **06 | AUTHENTICATION:** Healthcare providers perform a final-mile scan. The system verifies the unbroken signature chain and batch expiry status.
 * **07 | INCIDENT MANAGEMENT:** In the event of a quality alert, the system performs a reverse-trace to notify all current holders and logs all corrective actions in the audit trail.
-
----
-
-
-
