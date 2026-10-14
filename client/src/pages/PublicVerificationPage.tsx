@@ -291,11 +291,27 @@ export const PublicVerificationPage: React.FC<PublicVerificationPageProps> = ({ 
                     <Sparkles size={20} />
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      AI Provenance & Anomaly Intelligence
-                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>
+                        AI Provenance & Anomaly Intelligence
+                      </h3>
+                      <span style={{
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: '12px',
+                        background: result.aiIntelligence.aiProvider?.includes('Groq') ? 'rgba(16, 185, 129, 0.15)' : 'rgba(56, 189, 248, 0.15)',
+                        color: result.aiIntelligence.aiProvider?.includes('Groq') ? '#6ee7b7' : '#7dd3fc',
+                        border: `1px solid ${result.aiIntelligence.aiProvider?.includes('Groq') ? 'rgba(16, 185, 129, 0.3)' : 'rgba(56, 189, 248, 0.3)'}`,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.25rem'
+                      }}>
+                        ⚡ {result.aiIntelligence.model || 'Groq Llama-3.3'}
+                      </span>
+                    </div>
                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      Continuous heuristic & statistical anomaly surveillance
+                      Continuous heuristic & statistical anomaly surveillance {result.aiIntelligence.aiProvider ? `• ${result.aiIntelligence.aiProvider}` : ''}
                     </span>
                   </div>
                 </div>
@@ -407,7 +423,6 @@ export const PublicVerificationPage: React.FC<PublicVerificationPageProps> = ({ 
                 </div>
               )}
 
-              {/* Natural Language Audit Summary & Recommendation */}
               {result.aiIntelligence.auditSummary && (
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.03)',
@@ -416,8 +431,15 @@ export const PublicVerificationPage: React.FC<PublicVerificationPageProps> = ({ 
                   padding: '1rem 1.25rem',
                   marginBottom: '1rem',
                 }}>
-                  <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-                    AI Recommendation & Safety Assessment
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                    <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>
+                      AI Recommendation & Safety Assessment
+                    </div>
+                    {result.aiIntelligence.auditSummary.regulatoryCompliance && (
+                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#38bdf8', background: 'rgba(56, 189, 248, 0.12)', padding: '0.15rem 0.4rem', borderRadius: '4px' }}>
+                        {result.aiIntelligence.auditSummary.regulatoryCompliance}
+                      </span>
+                    )}
                   </div>
                   <div style={{ fontSize: '0.95rem', color: '#e2e8f0', lineHeight: 1.5 }}>
                     "{result.aiIntelligence.auditSummary.recommendation}"

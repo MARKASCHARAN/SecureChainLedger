@@ -829,11 +829,30 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                   <Sparkles size={20} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
-                    AI Provenance Intelligence
-                  </h3>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                      AI Provenance Intelligence
+                    </h3>
+                    <span style={{
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      padding: '0.15rem 0.5rem',
+                      borderRadius: '12px',
+                      background: selectedAiBatch.aiProvider?.includes('Groq') ? '#f0fdf4' : '#f8fafc',
+                      color: selectedAiBatch.aiProvider?.includes('Groq') ? '#15803d' : '#475569',
+                      border: `1px solid ${selectedAiBatch.aiProvider?.includes('Groq') ? '#bbf7d0' : '#e2e8f0'}`,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem'
+                    }}>
+                      ⚡ {selectedAiBatch.model || 'Groq Llama-3.3'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.2rem' }}>
                     Batch: <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#0f172a' }}>{selectedAiBatch.batchNumber}</span>
+                    {selectedAiBatch.aiProvider && (
+                      <span style={{ marginLeft: '0.5rem', color: '#94a3b8' }}>• Engine: {selectedAiBatch.aiProvider}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -842,7 +861,6 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
               </button>
             </div>
 
-            {/* Score & Risk Level */}
             <div style={{
               background: '#f8fafc',
               borderRadius: '12px',
@@ -880,7 +898,6 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
               </div>
             </div>
 
-            {/* Anomalies List */}
             {selectedAiBatch.anomalies && selectedAiBatch.anomalies.length > 0 ? (
               <div style={{ marginBottom: '1.25rem' }}>
                 <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#be123c', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -917,7 +934,6 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
               </div>
             )}
 
-            {/* Audit Summary & Recommendation */}
             {selectedAiBatch.auditSummary && (
               <div style={{
                 background: '#f8fafc',
@@ -926,8 +942,15 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                 padding: '1rem',
                 marginBottom: '1.25rem'
               }}>
-                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '0.35rem' }}>
-                  AI Recommendation
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, letterSpacing: '0.04em' }}>
+                    AI Recommendation
+                  </div>
+                  {selectedAiBatch.auditSummary.regulatoryCompliance && (
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#2563eb', background: '#eff6ff', padding: '0.15rem 0.4rem', borderRadius: '4px' }}>
+                      {selectedAiBatch.auditSummary.regulatoryCompliance}
+                    </span>
+                  )}
                 </div>
                 <div style={{ fontSize: '0.9rem', color: '#1e293b', lineHeight: 1.5 }}>
                   "{selectedAiBatch.auditSummary.recommendation}"

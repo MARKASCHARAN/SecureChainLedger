@@ -1,5 +1,3 @@
-// client/src/types/index.ts
-
 export type UserRole = 'MANUFACTURER' | 'DISTRIBUTOR' | 'HOSPITAL' | 'PHARMACY' | 'REGULATOR' | 'ADMIN';
 export type OrgType = UserRole;
 
@@ -111,6 +109,8 @@ export interface AnomalyItem {
 export interface AiIntelligence {
   batchNumber: string;
   isAiGenerated: boolean;
+  aiProvider?: string;
+  model?: string;
   disclaimer: string;
   provenanceScore: number;
   riskLevel: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
@@ -124,6 +124,7 @@ export interface AiIntelligence {
     summaryText: string;
     keyFindings: string[];
     recommendation: string;
+    regulatoryCompliance?: string;
   };
   analyzedAt: string;
 }
@@ -159,4 +160,3 @@ export interface Recall {
     batch: { id: string; batchNumber: string; product?: { genericName: string } };
   }[];
 }
-
