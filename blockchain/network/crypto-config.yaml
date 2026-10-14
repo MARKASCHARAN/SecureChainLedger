@@ -1,0 +1,40 @@
+OrdererOrgs:
+  - Name: Orderer
+    Domain: orderer.securechain.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer.securechain.com
+        CommonName: orderer.securechain.com
+
+PeerOrgs:
+  - Name: Org1
+    Domain: org1.securechain.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: Org2
+    Domain: org2.securechain.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: Org3
+    Domain: org3.securechain.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: Org4
+    Domain: org4.securechain.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
