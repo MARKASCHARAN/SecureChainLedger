@@ -1,6 +1,3 @@
-// src/modules/auth/auth.routes.js
-// Auth route definitions with rate limiting applied.
-
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { validate } from '../../middleware/validate.js';
@@ -20,8 +17,9 @@ import { sendSuccess } from '../../lib/response.js';
 const router = Router();
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
-  max: 10,
+  windowMs: 150 * 60 * 1000,
+  max: process.env.NODE_ENV === 'production' ? 50 : 2000,
+  skip: () => process.env.NODE_ENV !== 'production',
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, code: 'RATE_LIMITED', message: 'Too many requests, please try again later.' },

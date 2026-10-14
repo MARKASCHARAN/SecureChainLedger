@@ -1,5 +1,3 @@
-// src/modules/organizations/org.service.js
-
 import { prisma } from '../../lib/prisma.js';
 import { NotFoundError } from '../../lib/errors.js';
 
@@ -21,7 +19,7 @@ export async function listOrganizations({ type, page = 1, pageSize = 20 } = {}) 
     prisma.organization.count({ where }),
   ]);
 
-  return { orgs, total, page, pageSize };
+  return { organizations: orgs, orgs, total, page, pageSize };
 }
 
 export async function getOrganization(id) {

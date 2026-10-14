@@ -35,7 +35,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       label: 'Batch Registry', 
       icon: Layers, 
       badge: user.role === 'MANUFACTURER' ? 'Active' : null, 
-      roles: ['MANUFACTURER', 'REGULATOR', 'ADMIN'] 
+      roles: ['MANUFACTURER', 'DISTRIBUTOR', 'HOSPITAL', 'PHARMACY', 'REGULATOR', 'ADMIN'] 
     },
     { 
       id: 'transfers', 

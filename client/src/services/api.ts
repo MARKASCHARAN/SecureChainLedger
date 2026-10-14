@@ -1,6 +1,3 @@
-// client/src/services/api.ts
-// Standard Fetch-based REST client connecting to /api/v1 with auto JWT headers.
-
 const API_BASE = '/api/v1';
 
 function getToken(): string | null {
@@ -34,7 +31,19 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const errorMsg = data?.message || data?.error || `Request failed with status ${response.status}`;
+    let errorMsg = data?.message || data?.error || `Request failed with status ${response.status}`;
+    if (data?.details) {
+      if (typeof data.details === 'string') {
+        errorMsg += `: ${data.details}`;
+      } else if (typeof data.details === 'object') {
+        const detailsStr = Object.entries(data.details)
+          .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(', ') : val}`)
+          .join('; ');
+        if (detailsStr) {
+          errorMsg += `: ${detailsStr}`;
+        }
+      }
+    }
     throw new Error(errorMsg);
   }
 
@@ -42,7 +51,6 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 }
 
 export const api = {
-  // Auth
   login: (credentials: { email: string; password: string }) =>
     request<{ user: any; accessToken: string }>('/auth/login', {
       method: 'POST',
@@ -57,7 +65,6 @@ export const api = {
     request<{ organizations: Array<{ id: string; name: string; type: string }> }>('/auth/organizations'),
   me: () => request<{ user: any }>('/auth/me'),
 
-  // Public Verification
   verifyBatch: (batchNumber: string) =>
     request<any>(`/verification/${encodeURIComponent(batchNumber)}`),
   verifyHash: (batchNumber: string, documentHash: string) =>
@@ -68,7 +75,6 @@ export const api = {
   getBatchAiAnalysis: (batchNumber: string) =>
     request<any>(`/ai/batches/${encodeURIComponent(batchNumber)}/analyze`),
 
-  // Products
   listProducts: () => request<{ products: any[] }>('/products'),
   createProduct: (productData: any) =>
     request<{ product: any }>('/products', {
@@ -76,7 +82,6 @@ export const api = {
       body: JSON.stringify(productData),
     }),
 
-  // Batches
   listBatches: () => request<{ batches: any[] }>('/batches'),
   createBatch: (batchData: any) =>
     request<{ batch: any }>('/batches', {
@@ -88,7 +93,6 @@ export const api = {
       method: 'PATCH',
     }),
 
-  // Transfers
   listTransfers: () => request<{ transfers: any[] }>('/transfers'),
   initiateTransfer: (data: { batchId: string; receiverId: string; quantity: number; notes?: string }) =>
     request<{ transfer: any }>('/transfers', {
@@ -106,10 +110,8 @@ export const api = {
       body: JSON.stringify({ reason }),
     }),
 
-  // Inventory
   listInventory: () => request<{ inventory: any[] }>('/inventory'),
 
-  // Recalls
   listRecalls: () => request<{ recalls: any[] }>('/recalls'),
   initiateRecall: (data: { reason: string; description?: string; batchIds: string[] }) =>
     request<{ recall: any }>('/recalls', {
@@ -122,10 +124,8 @@ export const api = {
       body: JSON.stringify({ batchId, notes }),
     }),
 
-  // Organizations
-  listOrganizations: () => request<{ organizations: any[] }>('/organizations'),
+  listOrganizations: () => request<{ organizations: any[]; orgs: any[] }>('/organizations?pageSize=100'),
 
-  // Ledger Explorer
   listLedgerTransactions: () =>
     request<{ transactions: any[]; outbox: any }>('/ledger/transactions'),
 };

@@ -1,10 +1,8 @@
-// src/modules/transfers/transfer.schema.js
-
 import { z } from 'zod';
 
 export const initiateTransferSchema = z.object({
-  batchId:    z.string().cuid(),
-  receiverId: z.string().cuid(),
+  batchId:    z.string().min(1),
+  receiverId: z.string().min(1),
   quantity:   z.number().int().positive(),
   notes:      z.string().max(1000).optional(),
 });

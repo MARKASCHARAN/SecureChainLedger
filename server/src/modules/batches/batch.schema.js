@@ -1,10 +1,8 @@
-// src/modules/batches/batch.schema.js
-
 import { z } from 'zod';
 
 export const createBatchSchema = z.object({
   batchNumber:       z.string().min(3).max(50),
-  productId:         z.string().cuid(),
+  productId:         z.string().min(1),
   quantity:          z.number().int().positive(),
   unitPrice:         z.number().positive(),
   manufacturedAt:    z.coerce.date(),

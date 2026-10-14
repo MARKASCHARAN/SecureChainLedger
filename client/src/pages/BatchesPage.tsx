@@ -35,7 +35,6 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
   const [prodScheduled, setProdScheduled] = useState(false);
   const [submittingProduct, setSubmittingProduct] = useState(false);
 
-  // New batch modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newBatchNumber, setNewBatchNumber] = useState('');
   const [newProductId, setNewProductId] = useState('');
@@ -45,11 +44,32 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
   const [newQaHash, setNewQaHash] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Transfer modal state
   const [transferBatch, setTransferBatch] = useState<Batch | null>(null);
   const [transferReceiverId, setTransferReceiverId] = useState('');
   const [transferQty, setTransferQty] = useState(500);
   const [transferNotes, setTransferNotes] = useState('');
+
+  const openCreateModal = () => {
+    const futureDate = new Date();
+    futureDate.setFullYear(futureDate.getFullYear() + 2);
+    setNewExpiresAt(futureDate.toISOString().split('T')[0]);
+    if (products.length > 0 && !newProductId) {
+      setNewProductId(products[0].id);
+    }
+    setShowCreateModal(true);
+  };
+
+  const openTransferModal = (batch: Batch) => {
+    setTransferBatch(batch);
+    setTransferQty(Math.min(batch.quantity, 500));
+    setTransferNotes('');
+    const eligible = orgs.filter(o => o.id !== user.organizationId && o.type !== 'REGULATOR');
+    if (eligible.length > 0) {
+      setTransferReceiverId(eligible[0].id);
+    } else {
+      setTransferReceiverId('');
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -57,11 +77,12 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
       const [batchData, prodData, orgData] = await Promise.all([
         api.listBatches().catch(() => ({ batches: [] })),
         api.listProducts().catch(() => ({ products: [] })),
-        api.listOrganizations().catch(() => ({ organizations: [] })),
+        api.listOrganizations().catch(() => api.getOrganizations()).catch(() => ({ organizations: [] })),
       ]);
       setBatches(batchData.batches || []);
       setProducts(prodData.products || []);
-      setOrgs(orgData.organizations || []);
+      const orgList = (orgData as any)?.organizations || (orgData as any)?.orgs || [];
+      setOrgs(orgList);
       if (prodData.products?.length > 0) {
         setNewProductId(prodData.products[0].id);
       }
@@ -75,6 +96,15 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (transferBatch && !transferReceiverId && orgs.length > 0) {
+      const eligible = orgs.filter(o => o.id !== user.organizationId && o.type !== 'REGULATOR');
+      if (eligible.length > 0) {
+        setTransferReceiverId(eligible[0].id);
+      }
+    }
+  }, [transferBatch, orgs, user.organizationId, transferReceiverId]);
 
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,17 +134,29 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
 
   const handleCreateBatch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newBatchNumber || !newProductId) return;
+    if (!newBatchNumber.trim()) {
+      alert('Please enter a valid Batch Number / Lot ID.');
+      return;
+    }
+    if (!newProductId) {
+      alert('Please select a Drug Product.');
+      return;
+    }
+    const expDate = newExpiresAt ? new Date(newExpiresAt) : new Date(Date.now() + 365 * 86400000 * 2);
+    if (isNaN(expDate.getTime()) || expDate <= new Date()) {
+      alert('Expiration date must be in the future.');
+      return;
+    }
     setSubmitting(true);
     try {
       await api.createBatch({
-        batchNumber: newBatchNumber,
+        batchNumber: newBatchNumber.trim(),
         productId: newProductId,
         quantity: Number(newQuantity),
         unitPrice: Number(newUnitPrice),
         manufacturedAt: new Date().toISOString(),
-        expiresAt: newExpiresAt ? new Date(newExpiresAt).toISOString() : new Date(Date.now() + 365*86400000).toISOString(),
-        qaDocumentHash: newQaHash || undefined,
+        expiresAt: expDate.toISOString(),
+        qaDocumentHash: newQaHash.trim() || undefined,
       });
       setShowCreateModal(false);
       setNewBatchNumber('');
@@ -138,14 +180,22 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
 
   const handleInitiateTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!transferBatch || !transferReceiverId) return;
+    if (!transferBatch) return;
+    if (!transferReceiverId) {
+      alert('Please select a recipient organization before dispatching.');
+      return;
+    }
+    if (transferQty <= 0 || transferQty > transferBatch.quantity) {
+      alert(`Please enter a transfer quantity between 1 and ${transferBatch.quantity}.`);
+      return;
+    }
     setSubmitting(true);
     try {
       await api.initiateTransfer({
         batchId: transferBatch.id,
         receiverId: transferReceiverId,
         quantity: Number(transferQty),
-        notes: transferNotes,
+        notes: transferNotes.trim() || undefined,
       });
       setTransferBatch(null);
       await loadData();
@@ -156,6 +206,7 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
       setSubmitting(false);
     }
   };
+
 
   const handleInspectAi = async (batchNumber: string) => {
     setAiLoadingBatchId(batchNumber);
@@ -240,7 +291,7 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                 <span>Add Drug Product</span>
               </button>
               <button
-                onClick={() => setShowCreateModal(true)}
+                onClick={openCreateModal}
                 className="light-btn-emerald"
               >
                 <Plus size={18} />
@@ -405,7 +456,7 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                 : 'Click "Register New Batch" above to anchor your first pharmaceutical lot on the blockchain.'}
             </p>
             {isManufacturer && (
-              <button onClick={() => setShowCreateModal(true)} className="light-btn-primary">
+              <button onClick={openCreateModal} className="light-btn-primary">
                 <Plus size={16} /> Register First Batch
               </button>
             )}
@@ -507,8 +558,8 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                       </button>
                     </td>
                     <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
-                        {isManufacturer && batch.status === 'PENDING_QA' && (
+                      <div style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}>
+                        {isManufacturer && (batch.status === 'PENDING_QA' || batch.status === 'DRAFT') && (
                           <button
                             onClick={() => handleApproveBatch(batch.id)}
                             className="light-btn-emerald"
@@ -517,14 +568,19 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                             <ShieldCheck size={14} /> Approve QA
                           </button>
                         )}
-                        {isManufacturer && batch.status === 'APPROVED' && (
+                        {(user.role === 'MANUFACTURER' || user.role === 'DISTRIBUTOR') && batch.status === 'APPROVED' && batch.currentOwnerId === user.organizationId && (
                           <button
-                            onClick={() => setTransferBatch(batch)}
+                            onClick={() => openTransferModal(batch)}
                             className="light-btn-primary"
                             style={{ padding: '0.4rem 0.85rem', fontSize: '0.78rem' }}
                           >
                             <Truck size={14} /> Dispatch Transfer
                           </button>
+                        )}
+                        {batch.status === 'APPROVED' && batch.currentOwnerId !== user.organizationId && (
+                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', background: '#f1f5f9', padding: '0.35rem 0.65rem', borderRadius: '6px' }}>
+                            Transferred
+                          </span>
                         )}
                       </div>
                     </td>
@@ -627,6 +683,8 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                   className="light-input"
                   value={newExpiresAt}
                   onChange={(e) => setNewExpiresAt(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  required
                 />
               </div>
 
@@ -692,7 +750,7 @@ export const BatchesPage: React.FC<BatchesPageProps> = ({ user, onNavigateToTran
                 >
                   <option value="">Select recipient distributor or hospital</option>
                   {orgs
-                    .filter(o => o.id !== user.organizationId)
+                    .filter(o => o.id !== user.organizationId && o.type !== 'REGULATOR')
                     .map(o => (
                       <option key={o.id} value={o.id}>
                         {o.name} ({o.type})

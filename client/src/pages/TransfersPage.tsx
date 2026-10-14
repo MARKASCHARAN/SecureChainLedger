@@ -5,9 +5,10 @@ import type { Transfer, User } from '../types';
 
 interface TransfersPageProps {
   user: User;
+  onNavigateToBatches?: () => void;
 }
 
-export const TransfersPage: React.FC<TransfersPageProps> = ({ user }) => {
+export const TransfersPage: React.FC<TransfersPageProps> = ({ user, onNavigateToBatches }) => {
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'INITIATED' | 'DELIVERED'>('ALL');
@@ -98,14 +99,25 @@ export const TransfersPage: React.FC<TransfersPageProps> = ({ user }) => {
           </p>
         </div>
 
-        <div style={{
-          display: 'flex',
-          gap: '0.35rem',
-          background: '#090d16',
-          border: '1px solid #1e293b',
-          padding: '0.35rem',
-          borderRadius: '10px'
-        }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {['MANUFACTURER', 'DISTRIBUTOR'].includes(user.role) && onNavigateToBatches && (
+            <button
+              onClick={onNavigateToBatches}
+              className="light-btn-primary"
+              style={{ fontSize: '0.85rem', padding: '0.55rem 1rem' }}
+            >
+              <Truck size={16} /> Dispatch New Transfer
+            </button>
+          )}
+
+          <div style={{
+            display: 'flex',
+            gap: '0.35rem',
+            background: '#090d16',
+            border: '1px solid #1e293b',
+            padding: '0.35rem',
+            borderRadius: '10px'
+          }}>
           {(['ALL', 'INITIATED', 'DELIVERED'] as const).map((filter) => (
             <button
               key={filter}
@@ -125,6 +137,7 @@ export const TransfersPage: React.FC<TransfersPageProps> = ({ user }) => {
               {filter === 'INITIATED' ? 'In Transit' : filter === 'ALL' ? 'All Transfers' : 'Delivered'}
             </button>
           ))}
+          </div>
         </div>
       </div>
 

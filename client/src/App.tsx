@@ -133,7 +133,7 @@ export const App: React.FC = () => {
               {activeTab === 'batches' && (
                 <BatchesPage user={user} onNavigateToTransfers={() => setActiveTab('transfers')} />
               )}
-              {activeTab === 'transfers' && <TransfersPage user={user} />}
+              {activeTab === 'transfers' && <TransfersPage user={user} onNavigateToBatches={() => setActiveTab('batches')} />}
               {activeTab === 'inventory' && <InventoryPage user={user} />}
               {activeTab === 'recalls' && <RecallsPage user={user} />}
               {activeTab === 'ledger' && <LedgerExplorerPage />}
