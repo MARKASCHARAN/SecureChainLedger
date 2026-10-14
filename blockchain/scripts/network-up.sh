@@ -2,24 +2,25 @@
 set -e
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="${DIR}/../.."
 NETWORK_DIR="${DIR}/../network"
 
-cd "${NETWORK_DIR}"
+cd "${ROOT_DIR}"
+docker-compose -f server/docker-compose.yml up -d
 
+cd "${NETWORK_DIR}"
 mkdir -p channel-artifacts
 
-if command -v cryptogen >/dev/null 2>&1; then
-  if [ ! -d "crypto-config" ]; then
-    cryptogen generate --config=./crypto-config.yaml --output="crypto-config"
-  fi
-fi
-
-if command -v configtxgen >/dev/null 2>&1; then
-  export FABRIC_CFG_PATH="${NETWORK_DIR}"
-  configtxgen -profile TwoOrgsOrdererGenesis -channelID system-channel -outputBlock ./channel-artifacts/genesis.block
-  configtxgen -profile PharmaChannel -outputCreateChannelTx ./channel-artifacts/pharma-channel.tx -channelID pharma-channel
+if [ ! -d "crypto-config" ]; then
+  docker run --rm -v "${NETWORK_DIR}:/opt/network" hyperledger/fabric-tools:2.5 cryptogen generate --config=/opt/network/crypto-config.yaml --output=/opt/network/crypto-config
 fi
 
 docker-compose -f docker-compose.yml up -d
 
-echo "Fabric network successfully initiated on pharma-channel."
+echo ""
+echo "=========================================================================="
+echo " SecureChainLedger — Full Stack & Blockchain Network is Active"
+echo "=========================================================================="
+echo ""
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+echo ""
